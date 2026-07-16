@@ -37,6 +37,11 @@ async function callClaude({model, system, messages, maxTokens=1024, schema}){
   }
   const data = await res.json();
   const text = (data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("");
+  if(!text.trim()){
+    if(data.stop_reason === "max_tokens") throw new Error("AI:n tänkte för länge och fick inte plats med svaret – prova igen.");
+    if(data.stop_reason === "refusal") throw new Error("AI:n avböjde frågan – formulera om den.");
+    throw new Error("Tomt svar från AI – prova igen.");
+  }
   return schema ? JSON.parse(text) : text;
 }
 
@@ -112,7 +117,7 @@ async function suggestMusic(desc){
 async function askMastaren(chatMessages){
   return callClaude({
     model: state.settings.modelSmart,
-    maxTokens: 3000,
+    maxTokens: 10000, // Sonnet 5 tänker adaptivt och tankarna räknas in – ge gott om utrymme
     system:"Du är Mästaren – en varm men rak whiskymentor i appen Smakresan. "+
       "Användaren är nybörjare som tränar sin gom med provningar hemma på helgerna. "+
       "Svara kort och konkret på svenska, max några stycken. Använd bara flaskor som finns på användarens hylla "+
@@ -127,7 +132,7 @@ async function generateTasting(extraWish){
   const ids = visibleBottles().filter(([id,b])=>b.status!=="finished").map(([id])=>id);
   return callClaude({
     model: state.settings.modelSmart,
-    maxTokens: 2500,
+    maxTokens: 8000, // rymmer adaptivt tänkande + det strukturerade svaret
     system:"Du designar nästa provning i appen Smakresan. "+journalContext(),
     messages:[{role:"user",content:
       "Föreslå EN ny provning (1–3 glas) som lär användaren något nytt utifrån dagboken ovan. "+

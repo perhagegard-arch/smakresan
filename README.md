@@ -29,7 +29,7 @@ Kvällens startpunkt.
 - **Din smakprofil** – snittbetyg per flaska, plus dina vanligaste smakord ("honung ×6").
 - **Kvällarnas lärdomar** – en mening per kväll.
 
-### 🧴 Hyllan
+### 🍾 Hyllan
 Tre undervyer:
 - **Flaskor** – biblioteket med foto, metadata och status (oöppnad/öppen/urdrucken). *+ Lägg till flaska*: fota etiketten så läser AI av namn, destilleri, ABV, region och fattyp och förifyller formuläret – du bekräftar alltid själv innan det sparas. Varje flaska har ett **"Så dricker du den"-kort**: vattenråd styrt av alkoholhalten (fatstyrka → pipett!), glasval, vilotid och rökordning.
 - **Kylen** – karta över vinkylen. Tryck på en tom plats för att lägga in en flaska; från flaskdetaljen hittar du "Visa i kylen" som pekar ut platsen.

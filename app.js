@@ -445,6 +445,7 @@ function renderFlavourMap(){
 
 /* ===== Vy: Mästaren ===== */
 let chatBusy = false;
+let chatError = null;
 let pendingSuggestion = null;
 
 function renderMastaren(){
@@ -458,6 +459,7 @@ function renderMastaren(){
   }
   state.chat.forEach(m => { h += '<div class="msg '+(m.role==="user"?"user":"ai")+'">'+esc(m.text)+'</div>'; });
   if(chatBusy) h += '<div class="msg thinking">Mästaren funderar …</div>';
+  if(chatError && !chatBusy) h += '<div class="msg ai" style="border-color:var(--danger)">⚠️ '+esc(chatError)+'</div>';
   h += '</div>';
 
   if(pendingSuggestion){
@@ -502,6 +504,7 @@ async function sendChat(){
   state.chat = state.chat.slice(-40);
   save();
   chatBusy = true;
+  chatError = null;
   renderView();
   try{
     const messages = state.chat.slice(-20).map(m => ({role:m.role==="user"?"user":"assistant", content:m.text}));
@@ -509,7 +512,7 @@ async function sendChat(){
     state.chat.push({role:"ai", text:reply});
     state.chat = state.chat.slice(-40);
     save();
-  }catch(e){ toast(e.message); }
+  }catch(e){ chatError = e.message; }
   chatBusy = false;
   renderView();
 }
@@ -518,11 +521,12 @@ async function suggestTastingFlow(){
   if(chatBusy) return;
   const wish = $("chatField") ? $("chatField").value.trim() : "";
   chatBusy = true;
+  chatError = null;
   renderView();
   try{
     pendingSuggestion = await generateTasting(wish);
     if(!pendingSuggestion.bottles || !pendingSuggestion.bottles.length) throw new Error("Mästaren hittade inget förslag – prova igen.");
-  }catch(e){ toast(e.message); pendingSuggestion = null; }
+  }catch(e){ chatError = e.message; pendingSuggestion = null; }
   chatBusy = false;
   renderView();
 }
