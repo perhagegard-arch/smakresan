@@ -38,12 +38,23 @@ function fillDefaults(st){
   Object.keys(d).forEach(k => { if(st[k] === undefined) st[k] = d[k]; });
   st.settings = Object.assign({}, d.settings, st.settings || {});
   st.fridge = Object.assign({rows:3, cols:4, slots:{}}, st.fridge || {});
+  // Fyll på signaturlåtar från seed på befintliga flaskor – rör aldrig egna val
+  Object.entries(BOTTLE_SEED).forEach(([id, seed]) => {
+    const b = st.bottles && st.bottles[id];
+    if(b && seed.song && !(b.song && (b.song.artist || b.song.title))){
+      b.song = {artist:seed.song.artist, title:seed.song.title};
+    }
+  });
   return st;
 }
 function load(){
   try{
     const v2 = localStorage.getItem(KEY);
-    if(v2) return fillDefaults(JSON.parse(v2));
+    if(v2){
+      const st = fillDefaults(JSON.parse(v2));
+      try{ localStorage.setItem(KEY, JSON.stringify(st)); }catch(e){}
+      return st;
+    }
     const st = defaultState();
     const v1 = localStorage.getItem(V1KEY); // v1 raderas aldrig – den är backup
     if(v1){ try{ st.sessions = JSON.parse(v1).sessions || {}; }catch(e){} }
