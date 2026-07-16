@@ -446,7 +446,9 @@ function renderFlavourMap(){
 /* ===== Vy: Mästaren ===== */
 let chatBusy = false;
 let chatError = null;
+let chatExpanded = false;
 let pendingSuggestion = null;
+const CHAT_VISIBLE = 6; // meddelanden som visas hopfällt
 
 function renderMastaren(){
   let h = '<div class="sec-label">Mästaren</div>';
@@ -457,7 +459,13 @@ function renderMastaren(){
   if(!state.chat.length && state.settings.apiKey){
     h += '<div class="msg ai">Godkväll! Jag är Mästaren. Fråga mig vad du vill om dina flaskor – eller be mig föreslå nästa provning. 🥃</div>';
   }
-  state.chat.forEach(m => { h += '<div class="msg '+(m.role==="user"?"user":"ai")+'">'+esc(m.text)+'</div>'; });
+  const hiddenCount = Math.max(0, state.chat.length - CHAT_VISIBLE);
+  if(hiddenCount > 0){
+    h += '<button class="btn ghost small" id="chatMoreBtn" style="align-self:center">'+
+      (chatExpanded ? "📜 Dölj tidigare" : "📜 Visa tidigare frågor ("+hiddenCount+")")+'</button>';
+  }
+  const visibleChat = chatExpanded ? state.chat : state.chat.slice(-CHAT_VISIBLE);
+  visibleChat.forEach(m => { h += '<div class="msg '+(m.role==="user"?"user":"ai")+'">'+esc(m.text)+'</div>'; });
   if(chatBusy) h += '<div class="msg thinking">Mästaren funderar …</div>';
   if(chatError && !chatBusy) h += '<div class="msg ai" style="border-color:var(--danger)">⚠️ '+esc(chatError)+'</div>';
   h += '</div>';
@@ -475,6 +483,7 @@ function renderMastaren(){
   h += '<div class="chat-input"><textarea id="chatField" placeholder="Fråga Mästaren …" '+(state.settings.apiKey?"":"disabled")+'></textarea>'+
     '<button id="chatSend" '+(state.settings.apiKey&&!chatBusy?"":"disabled")+'>➤</button></div>';
   h += '<button class="btn ghost" style="margin-top:12px" id="suggestBtn" '+(state.settings.apiKey&&!chatBusy?"":"disabled")+'>✨ Föreslå ny provning utifrån min dagbok</button>';
+  if(state.chat.length) h += '<div class="danger" style="margin-top:10px"><button id="clearChatBtn">Rensa chatten</button></div>';
 
   // Inställningar
   const f = state.fridge;
@@ -1284,6 +1293,18 @@ function bindView(){
   }
   const sug = $("suggestBtn");
   if(sug) sug.addEventListener("click", suggestTastingFlow);
+  const more = $("chatMoreBtn");
+  if(more) more.addEventListener("click", () => { chatExpanded = !chatExpanded; renderView(); });
+  const clearChat = $("clearChatBtn");
+  if(clearChat) clearChat.addEventListener("click", () => {
+    if(!confirm("Rensa hela chathistoriken med Mästaren? Dina provningar och flaskor påverkas inte.")) return;
+    state.chat = [];
+    chatError = null;
+    chatExpanded = false;
+    save();
+    renderView();
+    toast("Chatten rensad.");
+  });
 
   const saveKey = $("saveKeyBtn");
   if(saveKey){
