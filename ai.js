@@ -45,6 +45,38 @@ async function callClaude({model, system, messages, maxTokens=1024, schema}){
   return schema ? JSON.parse(text) : text;
 }
 
+/* Kompakt sammanfattning av hyllan + provningsdagboken – Mästarens minne */
+function journalContext(){
+  const lines = ["ANVÄNDARENS HYLLA:"];
+  visibleBottles().forEach(([id, b]) => {
+    lines.push("- ["+id+"] "+b.name+" · "+(b.type||"?")+" · "+(b.region||"?")+" · "+(b.abv||"?")+" % · fat: "+(b.cask||"?")+
+      " · status: "+(b.status||"open")+
+      (b.flavour ? " · smakkarta (ljus0-fyllig1: "+b.flavour.x+", mild0-rökig1: "+b.flavour.y+")" : ""));
+  });
+  lines.push("", "PROVNINGSDAGBOK:");
+  let any = false;
+  allTastings().forEach(t => {
+    const s = state.sessions[t.n];
+    if(!s) return;
+    any = true;
+    const gl = (s.glasses||[]).map(g => {
+      const b = bottle(g.bottle);
+      return (b ? b.name : g.bottle)+': doft "'+(g.nose||"–")+'", smak "'+(g.taste||"–")+'", eftersmak '+(g.finish||"–")+
+        ", betyg "+(g.rating||"–")+
+        (g.flavors && g.flavors.length ? ", smakord: "+g.flavors.join("/") : "");
+    }).join(" | ");
+    lines.push('Provning '+t.n+' ('+(s.date||"?")+') "'+t.q+'": '+gl+(s.lesson ? ' · Lärdom: "'+s.lesson+'"' : ""));
+  });
+  if(!any) lines.push("(Inga provningar genomförda ännu.)");
+  Object.entries(state.retastes||{}).forEach(([id, r]) => {
+    (r.entries||[]).forEach(e => {
+      const b = bottle(id);
+      if(b && (e.nose || e.taste)) lines.push((e.blind?"Blindprovning":"Omprovning")+" "+(e.date||"")+" av "+b.name+': doft "'+(e.nose||"–")+'", smak "'+(e.taste||"–")+'"');
+    });
+  });
+  return lines.join("\n");
+}
+
 /* Snabb ping för att verifiera nyckeln */
 async function testApiKey(){
   await callClaude({
