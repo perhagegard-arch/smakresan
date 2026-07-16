@@ -183,6 +183,12 @@ function renderIkvall(){
     h += '<div class="notice">💾 Allt sparas bara i den här webbläsaren. Gör en säkerhetskopia under Mästaren → Inställningar.</div>';
   }
 
+  // Kyl-tips tills första flaskan fått en plats
+  if(Object.keys(state.fridge.slots).length === 0){
+    h += '<div class="notice">❄️ Håll koll på var flaskorna står: lägg in dem i vinkylskartan. '+
+      '<a href="#" onclick="goToFridge();return false" style="color:var(--gold);font-weight:600">Öppna kylen →</a></div>';
+  }
+
   const next = nextTasting();
   h += '<div class="sec-label">Nästa provning</div>';
   if(next){
@@ -290,7 +296,7 @@ function renderResan(){
 function renderHyllan(){
   let h = '<div class="seg-toggle">'+
     ["flaskor","kylen","smakkartan"].map(k =>
-      '<button class="'+(ui.hylla===k?"on":"")+'" onclick="setHylla(\''+k+'\')">'+({flaskor:"Flaskor",kylen:"Kylen",smakkartan:"Smakkartan"}[k])+'</button>').join("")+
+      '<button class="'+(ui.hylla===k?"on":"")+'" onclick="setHylla(\''+k+'\')">'+({flaskor:"🍾 Flaskor",kylen:"❄️ Kylen",smakkartan:"🗺️ Smakkartan"}[k])+'</button>').join("")+
     '</div>';
   if(ui.hylla === "flaskor") h += renderBottleList();
   else if(ui.hylla === "kylen") h += renderFridge();
@@ -302,7 +308,10 @@ function setHylla(k){ ui.hylla = k; renderView(); }
 function renderBottleList(){
   const order = {open:0, unopened:1, finished:2};
   const list = visibleBottles().sort((a,b) => (order[a[1].status]||0)-(order[b[1].status]||0) || a[1].name.localeCompare(b[1].name,"sv"));
-  let h = '<button class="btn" onclick="openBottleForm(null)">+ Lägg till flaska</button><div style="height:14px"></div>';
+  let h = '<div style="display:flex;gap:8px">'+
+    '<button class="btn" style="margin-top:0" onclick="openBottleForm(null,{camera:true})">📷 Fota ny flaska</button>'+
+    '<button class="btn ghost" style="margin-top:0;width:auto;padding:14px 18px" onclick="openBottleForm(null)">+ Lägg till</button>'+
+    '</div><div style="height:14px"></div>';
   h += list.map(([id, b]) => {
     const img = photos[id] ? '<img class="bottle-thumb" src="'+photos[id]+'" alt="">' : dotHtml(b.color, 30);
     const meta = [b.type, b.region, b.abv ? b.abv+" %" : null].filter(Boolean).join(" · ");
@@ -356,6 +365,12 @@ function slotClick(r, c){
 }
 function fillSlot(key, id){ state.fridge.slots[key] = id; save(); closeOverlay(); renderView(); }
 function clearSlot(key){ delete state.fridge.slots[key]; save(); closeOverlay(); renderView(); }
+function goToFridge(){
+  ui.view = "hyllan"; ui.hylla = "kylen";
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.v === "hyllan"));
+  renderView();
+  window.scrollTo(0,0);
+}
 function showInFridge(id){
   closeOverlay();
   ui.view = "hyllan"; ui.hylla = "kylen"; ui.hl = id;
@@ -851,7 +866,8 @@ function openBottleDetail(id){
 }
 
 let formDraft = null, pendingPhoto = null;
-function openBottleForm(id){
+function openBottleForm(id, opts){
+  opts = opts || {};
   const b = id ? bottle(id) : null;
   formDraft = b ? JSON.parse(JSON.stringify(b)) : {name:"", distillery:"", region:"", type:"", abv:"", cask:"", price:"", status:"unopened", flavour:{x:0.5, y:0.5}};
   if(!formDraft.flavour) formDraft.flavour = {x:0.5, y:0.5};
@@ -890,6 +906,7 @@ function openBottleForm(id){
 
   openOverlay(html, {saveLabel:"Spara flaskan", onSave:saveBottleForm});
   bindBottleForm();
+  if(opts.camera) $("photoInput").click(); // öppnar kameran direkt på mobilen
 }
 
 function bindBottleForm(){
