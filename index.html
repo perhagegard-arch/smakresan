@@ -5,17 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Smakresan</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div class="wrap">
-  <header>
+<div class="hero">
+  <img src="images/web/hero.jpg" alt="Vitmålat destilleri vid vattnet på Islay">
+  <div class="hero-text">
     <div class="eyebrow">Provningsprotokoll</div>
     <h1>Smakresan</h1>
-    <p class="sub">En fråga i taget. Din gom, tränad.</p>
-  </header>
-
+    <p class="sub">Torv. Hav. Ett glas i taget.</p>
+  </div>
+</div>
+<div class="wrap">
   <div id="viewRoot"></div>
 
   <footer>Sparas lokalt i din webbläsare · Glencairn rekommenderas 🥃</footer>
@@ -23,10 +25,10 @@
 
 <!-- Flikrad -->
 <nav class="tabbar"><div class="inner">
-  <button class="tab on" data-v="ikvall"><span class="ic">🥃</span>Ikväll</button>
-  <button class="tab" data-v="resan"><span class="ic">🗺️</span>Resan</button>
-  <button class="tab" data-v="hyllan"><span class="ic">🍾</span>Hyllan</button>
-  <button class="tab" data-v="mastaren"><span class="ic">🎩</span>Mästaren</button>
+  <button class="tab on" data-v="ikvall"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12l-1.2 15a2 2 0 0 1-2 1.8H9.2a2 2 0 0 1-2-1.8L6 4z"/><path d="M6.8 12h10.4"/></svg></span>Ikväll</button>
+  <button class="tab" data-v="resan"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21.5s-6.5-5.7-6.5-10.6a6.5 6.5 0 0 1 13 0C18.5 15.8 12 21.5 12 21.5z"/><circle cx="12" cy="10.8" r="2.3"/></svg></span>Resan</button>
+  <button class="tab" data-v="hyllan"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2.5h4M10.5 2.5v4.2l-2.6 3.1a3.2 3.2 0 0 0-.7 2.1v7.1a2.5 2.5 0 0 0 2.5 2.5h4.6a2.5 2.5 0 0 0 2.5-2.5v-7.1a3.2 3.2 0 0 0-.7-2.1l-2.6-3.1V2.5"/><path d="M7.2 14.5h9.6"/></svg></span>Hyllan</button>
+  <button class="tab" data-v="mastaren"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5.2"/><path d="M9.2 13.4 7.6 21l4.4-2.4L16.4 21l-1.6-7.6"/><path d="M10 9l1.5 1.5L14.5 7"/></svg></span>Mästaren</button>
 </div></nav>
 
 <!-- Overlay (provning, flaskor, blindläge m.m.) -->

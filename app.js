@@ -78,6 +78,18 @@ function savePhotos(){
 let state = load();
 let photos = loadPhotos();
 
+/* Riktiga Islay-foton (images/islay → nedskalade i images/web) som
+   fallback när flaskan saknar eget foto. Egna foton vinner alltid. */
+const STATIC_PHOTOS = {
+  lap:{thumb:"images/web/lap-640.jpg", full:"images/web/lap-1280.jpg"},
+  uig:{thumb:"images/web/uig-640.jpg", full:"images/web/uig-1280.jpg"}
+};
+function bottlePhoto(id, size){
+  if(photos[id]) return photos[id];
+  const s = STATIC_PHOTOS[id];
+  return s ? s[size||"thumb"] : null;
+}
+
 /* ===== Hjälpare ===== */
 const $ = id => document.getElementById(id);
 function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
@@ -199,13 +211,13 @@ function renderIkvall(){
   // Kyl-tips tills första flaskan fått en plats
   if(Object.keys(state.fridge.slots).length === 0){
     h += '<div class="notice">❄️ Håll koll på var flaskorna står: lägg in dem i vinkylskartan. '+
-      '<a href="#" onclick="goToFridge();return false" style="color:var(--gold);font-weight:600">Öppna kylen →</a></div>';
+      '<a href="#" onclick="goToFridge();return false" style="color:var(--peat);font-weight:600">Öppna kylen →</a></div>';
   }
 
   const next = nextTasting();
   h += '<div class="sec-label">Nästa provning</div>';
   if(next){
-    const ph = allPhases().find(p => p.id === next.phase) || {name:"", color:"var(--gold)"};
+    const ph = allPhases().find(p => p.id === next.phase) || {name:"", color:"var(--peat)"};
     h += '<div class="tonight" style="--phase:'+ph.color+'">'+
       '<div class="t-phase">'+esc(ph.name)+' · Provning '+next.n+'</div>'+
       '<div class="t-q">'+esc(next.q)+'</div>'+
@@ -353,7 +365,8 @@ function renderBottleList(){
     '<button class="btn ghost" style="margin-top:0;width:auto;padding:14px 18px" onclick="openBottleForm(null)">+ Lägg till</button>'+
     '</div><div style="height:14px"></div>';
   h += list.map(([id, b]) => {
-    const img = photos[id] ? '<img class="bottle-thumb" src="'+photos[id]+'" alt="">' : dotHtml(b.color, 30);
+    const p = bottlePhoto(id, "thumb");
+    const img = p ? '<img class="bottle-thumb" src="'+p+'" alt="">' : dotHtml(b.color, 30);
     const meta = [b.type, b.region, b.abv ? b.abv+" %" : null].filter(Boolean).join(" · ");
     const st = b.status||"open";
     const stName = {open:"Öppen", unopened:"Oöppnad", finished:"Urdrucken"}[st];
@@ -472,7 +485,7 @@ function renderMastaren(){
 
   if(pendingSuggestion){
     const s = pendingSuggestion;
-    h += '<div class="card suggestion"><div class="t-phase" style="color:var(--gold)">Förslag på ny provning</div>'+
+    h += '<div class="card suggestion"><div class="t-phase" style="color:var(--peat)">Förslag på ny provning</div>'+
       '<div class="t-q" style="font-size:20px">'+esc(s.q)+'</div>'+
       '<div class="t-bottles">'+s.bottles.map(chip).join("")+'</div>'+
       '<p class="t-why">'+esc(s.why)+'</p>'+
@@ -605,7 +618,7 @@ function resetAll(){
 let ovSave = null;
 function ovTop(title){
   return '<div class="ov-top"><button class="back" onclick="closeOverlay()">← Tillbaka</button></div>'+
-    (title ? '<h2 style="font-family:Libre Caslon Text,serif;font-size:24px;line-height:1.25;margin:0 0 16px">'+esc(title)+'</h2>' : '');
+    (title ? '<h2 style="font-family:Big Shoulders Display,sans-serif;text-transform:uppercase;letter-spacing:.02em;font-size:24px;line-height:1.25;margin:0 0 16px">'+esc(title)+'</h2>' : '');
 }
 function openOverlay(html, opts){
   opts = opts || {};
@@ -640,10 +653,10 @@ function openTasting(n){
   draft.glasses.forEach(g => { if(!g.flavors) g.flavors=[]; if(g.noseWater===undefined) g.noseWater=""; if(g.tasteWater===undefined) g.tasteWater=""; });
   if(draft.music === undefined) draft.music = "";
 
-  const ph = allPhases().find(p => p.id === current.phase) || {name:"",color:"var(--gold)"};
+  const ph = allPhases().find(p => p.id === current.phase) || {name:"",color:"var(--peat)"};
   let html = '<div class="ov-top"><button class="back" onclick="closeOverlay()">← Tillbaka</button></div>'+
     '<div class="t-phase" style="color:'+ph.color+'">'+esc(ph.name)+' · Provning '+current.n+'</div>'+
-    '<h2 style="font-family:Libre Caslon Text,serif;font-size:24px;line-height:1.25;margin:8px 0 6px">'+esc(current.q)+'</h2>'+
+    '<h2 style="font-family:Big Shoulders Display,sans-serif;text-transform:uppercase;letter-spacing:.02em;font-size:24px;line-height:1.25;margin:8px 0 6px">'+esc(current.q)+'</h2>'+
     '<p style="font-size:14px;color:var(--paper-dim);margin-bottom:18px">'+esc(current.why)+'</p>';
 
   draft.glasses.forEach((g, i) => {
@@ -936,7 +949,7 @@ let guestDraft = null;
 function openGuestView(inv){
   guestDraft = {v:1, n:inv.n, name:"", glasses:(inv.glasses||[]).map(g => ({label:g.label, name:g.name||null, nose:"", taste:"", rating:0}))};
   let html = '<div class="ov-top"><span class="mono">Smakresan · Gästprovning</span></div>'+
-    '<h2 style="font-family:Libre Caslon Text,serif;font-size:24px;line-height:1.25;margin:0 0 6px">🥃 Du är bjuden på provning!</h2>'+
+    '<h2 style="font-family:Big Shoulders Display,sans-serif;text-transform:uppercase;letter-spacing:.02em;font-size:24px;line-height:1.25;margin:0 0 6px">🥃 Du är bjuden på provning!</h2>'+
     '<p class="muted" style="margin-bottom:16px">'+esc(inv.host||"Värden")+' undrar: «'+esc(inv.q||"")+'» — skriv vad du känner, utan att snegla på värdens anteckningar.</p>'+
     '<div class="field"><label>Ditt namn</label><input type="text" id="gName" placeholder="t.ex. Maria"></div>';
   guestDraft.glasses.forEach((g,i) => {
@@ -1068,7 +1081,8 @@ function openBottleDetail(id){
   const slotKey = fridgeSlotOf(id);
   const notes = pastNotesFor(id);
   let html = ovTop(b.name);
-  if(photos[id]) html += '<img class="detail-photo" src="'+photos[id]+'" alt="'+esc(b.name)+'">';
+  const detailPhoto = bottlePhoto(id, "full");
+  if(detailPhoto) html += '<img class="detail-photo" src="'+detailPhoto+'" alt="'+esc(b.name)+'">';
   html += '<dl class="kv">'+
     (b.distillery?'<dt>Destilleri</dt><dd>'+esc(b.distillery)+'</dd>':"")+
     (b.region?'<dt>Region</dt><dd>'+esc(b.region)+'</dd>':"")+
@@ -1076,7 +1090,7 @@ function openBottleDetail(id){
     (b.abv?'<dt>Styrka</dt><dd>'+b.abv+' %</dd>':"")+
     (b.cask?'<dt>Fat</dt><dd>'+esc(b.cask)+'</dd>':"")+
     (b.price?'<dt>Pris</dt><dd>'+b.price+' kr</dd>':"")+
-    (b.song&&(b.song.artist||b.song.title)?'<dt>Signaturlåt</dt><dd>🎵 <a href="'+spotify((b.song.artist||"")+" "+(b.song.title||""))+'" target="_blank" rel="noopener" style="color:var(--gold);text-decoration:none;font-weight:600">'+esc(b.song.artist)+' – '+esc(b.song.title)+'</a></dd>':"")+
+    (b.song&&(b.song.artist||b.song.title)?'<dt>Signaturlåt</dt><dd>🎵 <a href="'+spotify((b.song.artist||"")+" "+(b.song.title||""))+'" target="_blank" rel="noopener" style="color:var(--peat);text-decoration:none;font-weight:600">'+esc(b.song.artist)+' – '+esc(b.song.title)+'</a></dd>':"")+
     '<dt>Status</dt><dd>'+({open:"Öppen",unopened:"Oöppnad",finished:"Urdrucken"}[b.status]||"Öppen")+'</dd>'+
     (slotKey?'<dt>I kylen</dt><dd>Hylla '+(+slotKey.split(":")[0]+1)+', plats '+(+slotKey.split(":")[1]+1)+'</dd>':"")+
     '</dl>';
@@ -1123,7 +1137,8 @@ function openBottleForm(id, opts){
   ];
   let html = ovTop(id ? "Redigera flaska" : "Ny flaska");
   html += '<div class="glass-card">';
-  html += '<img class="photo-preview" id="photoPreview" src="'+(photos[id]||"")+'" alt="" style="'+(photos[id]?"":"display:none")+'">';
+  const formPhoto = id ? bottlePhoto(id, "full") : null;
+  html += '<img class="photo-preview" id="photoPreview" src="'+(formPhoto||"")+'" alt="" style="'+(formPhoto?"":"display:none")+'">';
   html += '<div class="seg-row" style="margin-bottom:14px">'+
     '<button class="seg-btn" id="photoBtn" type="button">📷 Fota flaskan'+(aiReady()?" (AI läser etiketten)":"")+'</button></div>'+
     '<input type="file" id="photoInput" accept="image/*" capture="environment" hidden>'+
