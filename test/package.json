@@ -1,0 +1,16 @@
+{
+  "name": "test",
+  "version": "1.0.0",
+  "description": "Bootar hela appen i jsdom och kör ~86 kontroller: v1-migrering, provningsflödet, omprovningar, blindläget, kylen, smakkartan, gästprovningen (två simulerade webbläsare), Fredagssnurran, chatthistoriken, signaturlåtarna och en beroendecheck som verifierar att varje funktion `ai.js` anropar är definierad.",
+  "main": "smoke.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "jsdom": "^29.1.1"
+  }
+}

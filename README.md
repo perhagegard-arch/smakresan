@@ -36,7 +36,7 @@ Tre undervyer:
 - **Smakkartan** – dina flaskor plottade på axlarna *ljus ↔ fyllig* och *mild ↔ rökig* (Diageos Flavour Map-modell). Luckanalysen visar vilka smakhörn du saknar – en inköpsguide. Härifrån startas också **blindprovningen**: medhjälparen väljer flaska i hemlighet, du quizzas (rökig? sherry? vilken flaska?) och får sedan facit mot dina egna gamla anteckningar.
 
 ### 🎩 Mästaren
-- **AI-chatt** grundad i hela din hylla och provningsdagbok: "vad ska jag prova ikväll?", "varför känner jag vanilj i bourbon?".
+- **AI-chatt** grundad i hela din hylla och provningsdagbok: "vad ska jag prova ikväll?", "varför känner jag vanilj i bourbon?". Chatten visar de 6 senaste meddelandena — äldre ligger bakom "📜 Visa tidigare frågor", och "Rensa chatten" tömmer historiken (rör inte provningar/flaskor). Max 40 meddelanden sparas; de 20 senaste skickas med som minne.
 - **✨ Föreslå ny provning** – Mästaren designar nästa provning utifrån vad du redan lärt dig, med bara flaskor du faktiskt äger. Godkänn så läggs den till i resan. Så förblir resan levande när hyllan växer.
 - **⚙️ Inställningar** – API-nyckel, kylens mått, export/import av säkerhetskopia, nollställning.
 
@@ -84,13 +84,14 @@ Export ger en JSON-fil (`smakresan-backup-ÅÅÅÅ-MM-DD.json`) med allt utom AP
 
 ### Utveckling & test
 
-Röktest körs i jsdom (Node):
+Röktestet ligger i `test/smoke.js` (~86 kontroller, se `test/README.md`):
 
 ```sh
-npm install jsdom          # i valfri temp-katalog
-node smoke-jsdom.js        # testskriptet bootar appen, migrerar v1-data,
-                           # kör provning/omprovning/blindläge/kyl/karta m.m.
+cd test && npm install jsdom && node smoke.js   # ska sluta med ALL TESTS PASSED
 ```
+
+Deployas via GitHub Pages: `git push` räcker, live på
+`perhagegard-arch.github.io/smakresan` efter ~1 min (CDN kan cachea några min till).
 
 Viktiga konventioner i koden:
 - **Svenskt UI** överallt.
