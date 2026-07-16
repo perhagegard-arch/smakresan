@@ -1,6 +1,23 @@
 # Idéer & framtid 💡
 
-Levande dokument – lägg till fritt. Idéerna kommer dels från benchmarken mot andra appar (Vivino, InVintory, Distiller, Whiskybase, Untappd, WSET, Beanconqueror), dels från egna infall.
+Levande dokument – lägg till fritt. Idéerna kommer dels från benchmarken mot andra appar (Vivino, InVintory, Distiller, Whiskybase, Untappd, WSET, Beanconqueror), dels från Pers Kök & Vinkällare, dels från egna infall.
+
+## Byggt ✅
+
+- **Signaturlåt per flaska** *(2026-07-16)* – varje flaska har en egen låt med Spotify-länk; kvällens flaskors låtar visas först i Kvällens ton. AI kan föreslå.
+- **Gästprovning med engångslänk** *(2026-07-16, idé från Pers Köks gästmiddagar)* – bjud in en gäst via länk (all data reser i själva länken, ingen server); gästen antecknar på sin mobil och skickar tillbaka en svarslänk; jämförelse sida vid sida, sparas under Resan.
+- **Fredagssnurran** *(2026-07-16)* – viktat lyckohjul bland öppna flaskor; det du inte rört på länge har större chans.
+
+## Från Pers Kök & utanför boxen (2026-07-16)
+
+- [ ] **Hall of Fame & Hall of Shame** *(Pers Kök)* – topplista över dina bästa OCH sämsta drammar, med citat ur anteckningarna. Skammen är halva nöjet.
+- [ ] **Whisky till maten – bryggan till Pers Kök** – "ikväll blir det viltgryta": AI:n parar middagen mot whiskyhyllan. På sikt en knapp i Pers Kök som frågar Smakresan om avecen.
+- [ ] **Öppen flaska-klockan** *(Pers Köks "Bör ätas snart")* – öppningsdatum + fyllnadsnivå (visuell flaska som töms); under en tredjedel kvar = oxidationsvarning: "prioritera Uigeadail, öppnad för 14 månader sen".
+- [ ] **Ditt Whiskyår (Wrapped)** *(Pers Köks källarstatistik)* – årsrapport i december: mest provade region, betygskurva, kr-per-njutningspoäng, totalvärde, årets citat. Delbar som bild.
+- [ ] **Dela hyllan** *(Pers Köks "Dela min källare")* – generera en snygg läs-bild/sida av hyllan + smakkartan att skryta med.
+- [ ] **Doftmemory på bussen** – quiz utan glas: "vilken av dina flaskor beskrev du som 'tjärig'?" Tränar smakminnet av dina egna anteckningar, Duolingo-style.
+- [ ] **Gomexamen med grader** – årligt blindtest (blindläget finns!) ger rank: Lärling → Gesäll → Mästare, plus region-badges: en Skottlandskarta som färgläggs när du provat Islay, Speyside, Highlands …
+- [ ] **QR-lappar till hyllan** – skriv ut små QR-koder att fästa på flaskorna; scanna med mobilkameran → flaskans detaljvy öppnas direkt (hash-routing `#flaska=tal` finns halvvägs via gästlänkarna).
 
 ## Nära till hands (bygger på det som redan finns)
 

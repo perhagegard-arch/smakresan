@@ -11,6 +11,7 @@ function seedBottles(){
   Object.entries(BOTTLE_SEED).forEach(([id, b]) => {
     out[id] = Object.assign({}, b, {
       flavour: b.flavour ? {x:b.flavour.x, y:b.flavour.y} : undefined,
+      song: b.song ? {artist:b.song.artist, title:b.song.title} : undefined,
       status: b.hidden ? undefined : "open",
       source: "seed"
     });
@@ -26,6 +27,7 @@ function defaultState(){
     phases: [],
     fridge: {rows:3, cols:4, slots:{}},
     retastes: {},
+    guests: [],
     chat: [],
     lastExport: null,
     settings: {apiKey:"", modelSmart:"claude-sonnet-5", modelFast:"claude-haiku-4-5"}
@@ -198,7 +200,8 @@ function renderIkvall(){
       '<div class="t-q">'+esc(next.q)+'</div>'+
       '<div class="t-bottles">'+next.bottles.map(chip).join("")+'</div>'+
       '<p class="t-why">'+esc(next.why)+'</p>'+
-      '<button class="btn" onclick="openTasting('+next.n+')">Starta provningen</button></div>';
+      '<button class="btn" onclick="openTasting('+next.n+')">Starta provningen</button>'+
+      '<button class="btn ghost" onclick="openGuestInvite('+next.n+')">👥 Bjud in en gäst</button></div>';
   } else {
     h += '<div class="tonight"><div class="t-q">Resan är genomförd! 🥃</div>'+
       '<p class="t-why">Alla provningar avklarade. Be Mästaren föreslå en ny provning – eller lägg till fler flaskor på hyllan.</p>'+
@@ -216,6 +219,12 @@ function renderIkvall(){
       '<button class="btn ghost" onclick="openRetaste(\''+id+'\')">Omprovning utan facit</button></div>';
   }
 
+  // Fredagssnurran
+  if(visibleBottles().filter(([id,b]) => b.status !== "finished").length >= 2){
+    h += '<div class="sec-label">Kan inte välja?</div>'+
+      '<button class="btn ghost" style="margin-top:0" onclick="openSpinner()">🎡 Fredagssnurran – låt ödet välja dram</button>';
+  }
+
   // Kvällens ton
   const toneIds = next ? next.bottles : (due.length ? [due[0][0]] : []);
   if(toneIds.length){
@@ -223,8 +232,18 @@ function renderIkvall(){
     const custom = aiTone && aiTone.sig === sig ? aiTone.data : null;
     const {tone} = toneFor(toneIds);
     const t = custom || tone;
+    // Kvällens flaskors signaturlåtar först
+    let sigRows = "";
+    [...new Set(toneIds)].forEach(id => {
+      const b = bottle(id);
+      if(b && !b.hidden && b.song && (b.song.artist || b.song.title)){
+        sigRows += '<div class="track">'+dotHtml(b.color,14)+' <span class="muted" style="font-size:13px">'+esc(b.name)+'</span> → '+
+          '<a href="'+spotify((b.song.artist||"")+" "+(b.song.title||""))+'" target="_blank" rel="noopener">'+esc(b.song.artist)+' – '+esc(b.song.title)+'</a></div>';
+      }
+    });
     h += '<div class="sec-label">Kvällens ton</div><div class="tone">'+
       '<div class="mono">🎵 Musik till glasen'+(custom?" · från Mästaren":"")+'</div>'+
+      (sigRows ? '<div style="margin:8px 0 12px">'+sigRows+'</div><div class="mono">Och för hela kvällen:</div>' : '')+
       '<div class="t-genre">'+esc(t.genre)+'</div>'+
       '<p class="muted">'+esc(t.why)+'</p>'+
       t.tracks.map(tr => '<div class="track">▶ <a href="'+spotify(tr.artist+" "+tr.title)+'" target="_blank" rel="noopener">'+esc(tr.artist)+' – '+esc(tr.title)+'</a></div>').join("")+
@@ -289,6 +308,16 @@ function renderResan(){
     '<div class="note-hist"><div class="nh-t">'+t.n+'. '+esc(t.q)+'</div>'+
     '<div class="nh-l">«'+esc(state.sessions[t.n].lesson)+'»</div></div>').join("")
     : '<div class="prof-empty" style="background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px">Här samlas en mening per kväll – vad du lärde dig.</div>';
+
+  // Gästprovningar
+  if(state.guests && state.guests.length){
+    h += '<div class="sec-label">Gästprovningar</div>'+
+      state.guests.map((g,i) =>
+        '<button class="bottle-row" onclick="openSavedGuest('+i+')">'+
+        '<span style="font-size:26px;flex:none">👥</span>'+
+        '<div class="b-info"><div class="b-name">'+esc(g.name)+' · Provning '+g.n+'</div>'+
+        '<div class="b-meta">'+esc(g.date||"")+'</div></div></button>').join("");
+  }
   return h;
 }
 
@@ -825,6 +854,189 @@ function blindReveal(){
   openOverlay(html, {saveLabel:"Klart!", onSave:() => { closeOverlay(); renderView(); }});
 }
 
+/* ===== Gästprovning (serverlös – all data reser i länken) ===== */
+function encodeShare(obj){
+  return btoa(unescape(encodeURIComponent(JSON.stringify(obj)))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+function decodeShare(s){
+  s = s.replace(/-/g,"+").replace(/_/g,"/");
+  while(s.length % 4) s += "=";
+  return JSON.parse(decodeURIComponent(escape(atob(s))));
+}
+function appUrl(){ return location.origin + location.pathname; }
+
+function shareBlock(link){
+  return '<div class="field" style="margin-top:12px"><label>Länk</label><textarea id="shareLink" readonly style="min-height:84px;font-size:12px">'+esc(link)+'</textarea></div>'+
+    '<div class="seg-row">'+
+    (navigator.share ? '<button class="seg-btn" id="shareBtn">📤 Dela</button>' : '')+
+    '<button class="seg-btn" id="copyBtn">📋 Kopiera</button></div>';
+}
+function bindShare(link, title){
+  const sb = $("shareBtn");
+  if(sb) sb.addEventListener("click", () => { navigator.share({title:title, url:link}).catch(()=>{}); });
+  $("copyBtn").addEventListener("click", async () => {
+    try{ await navigator.clipboard.writeText(link); toast("Länk kopierad!"); }
+    catch(e){ $("shareLink").select(); toast("Markerad – kopiera manuellt."); }
+  });
+}
+
+function openGuestInvite(n){
+  const t = allTastings().find(x => x.n === n);
+  if(!t) return;
+  openOverlay(ovTop("Bjud in en gäst")+
+    '<div class="card"><h3>👥 '+esc(t.q)+'</h3>'+
+    '<p class="muted">Gästen får en länk, antecknar på sin egen mobil och skickar tillbaka en svarslänk – sen jämför ni era intryck sida vid sida. Ingen app eller inloggning behövs.</p>'+
+    '<div class="field" style="margin-top:12px"><label>Vad ska gästen se?</label><div class="seg-row">'+
+    '<button class="seg-btn on" data-bl="0">Flasknamnen</button>'+
+    '<button class="seg-btn" data-bl="1">Blint (bara Glas 1, 2 …)</button></div></div>'+
+    '<button class="btn" id="makeInviteBtn">Skapa gästlänk</button>'+
+    '<div id="inviteResult"></div></div>');
+  let blind = false;
+  document.querySelectorAll(".seg-btn[data-bl]").forEach(b => b.addEventListener("click", () => {
+    blind = b.dataset.bl === "1";
+    document.querySelectorAll(".seg-btn[data-bl]").forEach(x => x.classList.remove("on"));
+    b.classList.add("on");
+  }));
+  $("makeInviteBtn").addEventListener("click", () => {
+    const payload = {v:1, n:t.n, q:t.q, host:"Per", glasses:t.bottles.map((id,i) => {
+      const b = bottle(id);
+      return {label:"Glas "+(i+1), name:(!blind && b && !b.hidden) ? b.name : null};
+    })};
+    const link = appUrl()+"#gast="+encodeShare(payload);
+    $("inviteResult").innerHTML = shareBlock(link)+'<p class="hint">Skicka länken till gästen – sms, WhatsApp, vad som helst.</p>';
+    bindShare(link, "Du är bjuden på whiskyprovning! 🥃");
+  });
+}
+
+let guestDraft = null;
+function openGuestView(inv){
+  guestDraft = {v:1, n:inv.n, name:"", glasses:(inv.glasses||[]).map(g => ({label:g.label, name:g.name||null, nose:"", taste:"", rating:0}))};
+  let html = '<div class="ov-top"><span class="mono">Smakresan · Gästprovning</span></div>'+
+    '<h2 style="font-family:Libre Caslon Text,serif;font-size:24px;line-height:1.25;margin:0 0 6px">🥃 Du är bjuden på provning!</h2>'+
+    '<p class="muted" style="margin-bottom:16px">'+esc(inv.host||"Värden")+' undrar: «'+esc(inv.q||"")+'» — skriv vad du känner, utan att snegla på värdens anteckningar.</p>'+
+    '<div class="field"><label>Ditt namn</label><input type="text" id="gName" placeholder="t.ex. Maria"></div>';
+  guestDraft.glasses.forEach((g,i) => {
+    html += '<div class="glass-card"><h3>'+esc(g.label||("Glas "+(i+1)))+(g.name?' · '+esc(g.name):'')+'</h3>'+
+      '<div class="field"><label>Doft – tre ord</label><input type="text" data-gi="'+i+'" data-gf="nose" placeholder="vad känner du?"></div>'+
+      '<div class="field"><label>Smak – tre ord</label><input type="text" data-gi="'+i+'" data-gf="taste" placeholder="…och i munnen?"></div>'+
+      '<div class="field"><label>Betyg</label><div class="stars">'+
+      Array.from({length:10},(_,k)=>'<button class="star" data-gi="'+i+'" data-r="'+(k+1)+'">'+(k+1)+'</button>').join("")+
+      '</div></div></div>';
+  });
+  openOverlay(html, {saveLabel:"Skapa svarslänk", onSave:makeGuestAnswerLink});
+  const root = $("ovContent");
+  $("gName").addEventListener("input", e => { guestDraft.name = e.target.value; });
+  root.querySelectorAll("input[data-gf]").forEach(inp => inp.addEventListener("input", () => {
+    guestDraft.glasses[+inp.dataset.gi][inp.dataset.gf] = inp.value;
+  }));
+  root.querySelectorAll(".star[data-gi]").forEach(st => st.addEventListener("click", () => {
+    const i = +st.dataset.gi, r = +st.dataset.r;
+    guestDraft.glasses[i].rating = r;
+    st.parentElement.querySelectorAll(".star").forEach(x => x.classList.toggle("on", +x.dataset.r <= r));
+  }));
+}
+function makeGuestAnswerLink(){
+  guestDraft.date = today();
+  const link = appUrl()+"#svar="+encodeShare(guestDraft);
+  openOverlay(ovTop("Tack för ikväll!")+
+    '<div class="card"><h3>🎉 Dina svar är klara</h3>'+
+    '<p class="muted">Skicka tillbaka länken till värden, så jämför ni era intryck sida vid sida.</p>'+
+    shareBlock(link)+'</div>');
+  bindShare(link, "Mina provningssvar 🥃");
+}
+
+function openGuestAnswer(ans, viewOnly){
+  const t = allTastings().find(x => x.n === ans.n);
+  const mySession = state.sessions[ans.n];
+  let html = ovTop("Gästprovning · "+(ans.name||"Gäst"));
+  if(t) html += '<p class="muted" style="margin-bottom:14px">«'+esc(t.q)+'»'+(ans.date?' · '+esc(ans.date):'')+'</p>';
+  (ans.glasses||[]).forEach((g,i) => {
+    const mine = mySession && mySession.glasses && mySession.glasses[i];
+    const myBottle = t && t.bottles && t.bottles[i] ? bottle(t.bottles[i]) : null;
+    html += '<div class="glass-card"><h3>'+(myBottle&&!myBottle.hidden?dotHtml(myBottle.color,20)+' ':'')+esc(g.label||("Glas "+(i+1)))+(myBottle&&!myBottle.hidden?' · '+esc(myBottle.name):'')+'</h3>'+
+      '<div class="cmp"><div><div class="mono">'+esc(ans.name||"Gästen")+'</div>'+
+      '<p>Doft: <i>'+esc(g.nose||"–")+'</i><br>Smak: <i>'+esc(g.taste||"–")+'</i><br>Betyg: <b>'+(g.rating||"–")+'</b></p></div>'+
+      '<div><div class="mono">Du</div>'+
+      (mine ? '<p>Doft: <i>'+esc(mine.nose||"–")+'</i><br>Smak: <i>'+esc(mine.taste||"–")+'</i><br>Betyg: <b>'+(mine.rating||"–")+'</b></p>' : '<p class="muted">Ingen egen anteckning ännu – gör provningen så fylls den i här.</p>')+
+      '</div></div></div>';
+  });
+  if(viewOnly){ openOverlay(html); return; }
+  openOverlay(html, {saveLabel:"Spara gästprovningen", onSave:() => {
+    state.guests.push({date:ans.date||today(), name:ans.name||"Gäst", n:ans.n, glasses:ans.glasses});
+    save(); closeOverlay(); renderView(); toast("Gästprovning sparad!");
+  }});
+}
+function openSavedGuest(i){ const g = state.guests[i]; if(g) openGuestAnswer(g, true); }
+
+function handleHash(){
+  const h = location.hash || "";
+  if(!h.startsWith("#gast=") && !h.startsWith("#svar=")) return;
+  try{
+    if(h.startsWith("#gast=")) openGuestView(decodeShare(h.slice(6)));
+    else openGuestAnswer(decodeShare(h.slice(6)));
+  }catch(e){ toast("Länken gick inte att läsa – be om en ny."); }
+  history.replaceState(null, "", location.pathname + location.search);
+}
+
+/* ===== Fredagssnurran ===== */
+function lastNotedDate(id){
+  let d = null;
+  Object.values(state.sessions).forEach(s => (s.glasses||[]).forEach(g => {
+    if(g.bottle === id && s.date && (!d || s.date > d)) d = s.date;
+  }));
+  const r = state.retastes[id];
+  if(r) (r.entries||[]).forEach(e => { if(e.date && (!d || e.date > d)) d = e.date; });
+  return d;
+}
+function openSpinner(){
+  const cands = visibleBottles().filter(([id,b]) => b.status !== "finished");
+  if(cands.length < 2){ toast("Behövs minst två flaskor att välja bland."); return; }
+  // Viktad slump: längre sedan senaste anteckning = större chans
+  const t = today();
+  const weights = cands.map(([id]) => {
+    const d = lastNotedDate(id);
+    if(!d) return 400;
+    const days = Math.max(1, Math.round((new Date(t) - new Date(d)) / 86400000));
+    return Math.min(365, days) + 1;
+  });
+  let r = Math.random() * weights.reduce((a,b) => a+b, 0);
+  let winIx = cands.length - 1;
+  for(let i = 0; i < weights.length; i++){ r -= weights[i]; if(r <= 0){ winIx = i; break; } }
+
+  openOverlay(ovTop("Fredagssnurran")+
+    '<div class="card" style="text-align:center"><p class="muted">Ödet väljer bland '+cands.length+' flaskor – de du inte rört på länge har större chans.</p>'+
+    '<div class="spin-stage" id="spinStage"></div>'+
+    '<div id="spinResult"></div></div>');
+
+  const stage = $("spinStage");
+  const showFrame = ix => {
+    const [, b] = cands[ix];
+    stage.innerHTML = dotHtml(b.color, 34)+'<div class="spin-name">'+esc(b.name)+'</div>';
+  };
+  const finish = () => {
+    const [id, b] = cands[winIx];
+    stage.innerHTML = dotHtml(b.color, 44)+'<div class="spin-name spin-win">'+esc(b.name)+'</div>';
+    const adv = drinkAdvice(b)[0];
+    $("spinResult").innerHTML = (adv ? '<div class="notice" style="text-align:left">'+adv.ic+' '+esc(adv.txt)+'</div>' : '')+
+      '<button class="btn" onclick="openBottleDetail(\''+id+'\')">Visa flaskan</button>'+
+      '<button class="btn ghost" onclick="openSpinner()">🎡 Snurra igen</button>';
+  };
+  const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if(reduced){ finish(); return; }
+  const steps = 18 + Math.floor(Math.random()*6);
+  let i = 0, ix = Math.floor(Math.random()*cands.length);
+  const tick = () => {
+    if(!document.getElementById("spinStage")) return; // overlay stängd
+    showFrame(ix % cands.length);
+    i++;
+    if(i >= steps && ix % cands.length === winIx){ finish(); return; }
+    if(i > steps + 3*cands.length){ finish(); return; }
+    ix++;
+    setTimeout(tick, 50 + Math.pow(i, 1.7) * 3);
+  };
+  tick();
+}
+
 /* ===== Flaskdetalj & formulär ===== */
 function openBottleDetail(id){
   const b = bottle(id);
@@ -840,6 +1052,7 @@ function openBottleDetail(id){
     (b.abv?'<dt>Styrka</dt><dd>'+b.abv+' %</dd>':"")+
     (b.cask?'<dt>Fat</dt><dd>'+esc(b.cask)+'</dd>':"")+
     (b.price?'<dt>Pris</dt><dd>'+b.price+' kr</dd>':"")+
+    (b.song&&(b.song.artist||b.song.title)?'<dt>Signaturlåt</dt><dd>🎵 <a href="'+spotify((b.song.artist||"")+" "+(b.song.title||""))+'" target="_blank" rel="noopener" style="color:var(--gold);text-decoration:none;font-weight:600">'+esc(b.song.artist)+' – '+esc(b.song.title)+'</a></dd>':"")+
     '<dt>Status</dt><dd>'+({open:"Öppen",unopened:"Oöppnad",finished:"Urdrucken"}[b.status]||"Öppen")+'</dd>'+
     (slotKey?'<dt>I kylen</dt><dd>Hylla '+(+slotKey.split(":")[0]+1)+', plats '+(+slotKey.split(":")[1]+1)+'</dd>':"")+
     '</dl>';
@@ -871,6 +1084,7 @@ function openBottleForm(id, opts){
   const b = id ? bottle(id) : null;
   formDraft = b ? JSON.parse(JSON.stringify(b)) : {name:"", distillery:"", region:"", type:"", abv:"", cask:"", price:"", status:"unopened", flavour:{x:0.5, y:0.5}};
   if(!formDraft.flavour) formDraft.flavour = {x:0.5, y:0.5};
+  if(!formDraft.song) formDraft.song = {artist:"", title:""};
   formDraft.id = id || null;
   pendingPhoto = null;
 
@@ -894,6 +1108,9 @@ function openBottleForm(id, opts){
     html += '<div class="field"><label>'+label+'</label><input type="'+((f==="abv"||f==="price")?"number":"text")+'" '+
       (f==="abv"?'step="0.1" ':"")+'data-bf="'+f+'" value="'+esc(formDraft[f]==null?"":formDraft[f])+'" placeholder="'+ph+'"></div>';
   });
+  html += '<div class="field"><label>🎵 Signaturlåt – artist</label><input type="text" data-sf="artist" value="'+esc(formDraft.song.artist)+'" placeholder="t.ex. Tom Waits"></div>'+
+    '<div class="field"><label>🎵 Signaturlåt – titel</label><input type="text" data-sf="title" value="'+esc(formDraft.song.title)+'" placeholder="t.ex. Closing Time"></div>';
+  if(aiReady()) html += '<button class="btn ghost small" id="aiSongBtn" type="button" style="margin-bottom:14px">🎵 Låt Mästaren välja låt</button>';
   html += '<div class="field"><label>Status</label><div class="seg-row">'+
     [["unopened","Oöppnad"],["open","Öppen"],["finished","Urdrucken"]].map(([v,n]) =>
       '<button class="seg-btn'+(formDraft.status===v?" on":"")+'" data-st="'+v+'">'+n+'</button>').join("")+'</div></div>';
@@ -913,6 +1130,24 @@ function bindBottleForm(){
   const root = $("ovContent");
   root.querySelectorAll("input[data-bf]").forEach(inp => {
     inp.addEventListener("input", () => { formDraft[inp.dataset.bf] = inp.value; });
+  });
+  root.querySelectorAll("input[data-sf]").forEach(inp => {
+    inp.addEventListener("input", () => { formDraft.song[inp.dataset.sf] = inp.value; });
+  });
+  const sb = $("aiSongBtn");
+  if(sb) sb.addEventListener("click", async () => {
+    sb.disabled = true; sb.textContent = "Mästaren lyssnar …";
+    try{
+      const res = await suggestMusic((formDraft.name||"en whisky")+" ("+(formDraft.type||"whisky")+", "+(formDraft.cask||"okänt fat")+") – välj EN signaturlåt som fångar just den här flaskans karaktär");
+      const tr = res.tracks && res.tracks[0];
+      if(tr){
+        formDraft.song = {artist:tr.artist, title:tr.title};
+        root.querySelector('input[data-sf="artist"]').value = tr.artist;
+        root.querySelector('input[data-sf="title"]').value = tr.title;
+        toast(res.why);
+      }
+    }catch(e){ toast(e.message); }
+    sb.disabled = false; sb.textContent = "🎵 Låt Mästaren välja låt";
   });
   root.querySelectorAll(".seg-btn[data-st]").forEach(btn => btn.addEventListener("click", () => {
     formDraft.status = btn.dataset.st;
@@ -998,6 +1233,7 @@ function saveBottleForm(){
     cask: d.cask || "",
     price: d.price ? +d.price : null,
     status: d.status || "open",
+    song: (d.song && ((d.song.artist||"").trim() || (d.song.title||"").trim())) ? {artist:(d.song.artist||"").trim(), title:(d.song.title||"").trim()} : null,
     flavour: {x:d.flavour.x, y:d.flavour.y},
     addedAt: d.addedAt || prev.addedAt,
     source: d.source || prev.source || "manual"
@@ -1071,3 +1307,4 @@ function bindView(){
 $("saveBtn").addEventListener("click", () => { if(ovSave) ovSave(); });
 document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => switchView(t.dataset.v)));
 renderView();
+handleHash(); // gäst- eller svarslänk?

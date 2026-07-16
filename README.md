@@ -20,7 +20,9 @@ Kvällens startpunkt.
 - **Progress** – genomförda provningar av resans totala.
 - **Nästa provning** – nästa steg i resan, med pedagogisk motivering.
 - **Dags att prova igen** – när en flaska är schemalagd för omprovning (se nedan).
-- **Kvällens ton** – musik som matchar kvällens glas, med klickbara Spotify-länkar. Rökig Islay → dark jazz, sherrybomb → soul, rom → Karibien. Med API-nyckel kan Mästaren tärna fram ett färskt förslag.
+- **👥 Bjud in en gäst** – skapa en gästlänk för kvällens provning (välj om gästen ser flasknamnen eller provar blint). Gästen öppnar länken på sin mobil, antecknar och skickar tillbaka en svarslänk – era intryck visas sida vid sida och sparas under Resan. Helt serverlöst: all data reser i själva länken.
+- **🎡 Fredagssnurran** – kan du inte välja dram? Viktat lyckohjul bland dina flaskor, där de du inte rört på länge har större chans.
+- **Kvällens ton** – kvällens flaskors **signaturlåtar** visas först (varje flaska kan ha en egen låt – sätt själv eller låt Mästaren välja), följt av genre-förslag per smakkvadrant. Allt med klickbara Spotify-länkar.
 
 ### 🗺️ Resan
 - **Tidslinjen** – alla provningar grupperade per fas. Klicka på ett stopp för att göra eller redigera provningen. AI-genererade provningar dyker upp som Fas 5+.
@@ -62,11 +64,12 @@ state = {
   sessions: { [n]: {glasses:[{bottle, nose, taste, finish, rating,
                               flavors[], noseWater, tasteWater}], lesson, music, date} },
   bottles:  { [id]: {name, color, distillery, region, type, abv, cask, price,
-                     status, flavour:{x,y}, aiTip?, addedAt, source} },
+                     status, flavour:{x,y}, song:{artist,title}?, aiTip?, addedAt, source} },
   tastings: [ {n, phase, q, bottles[], why, source:"ai"} ],   // bara nya/AI-provningar
   phases:   [ {id, name, color} ],                            // Fas 5+
   fridge:   { rows, cols, slots: {"rad:kolumn": flaskId} },
   retastes: { [id]: {due, stage, entries:[{date, nose, taste, blind, guess?, correct?}]} },
+  guests:   [ {date, name, n, glasses:[{label, nose, taste, rating}]} ],
   chat:     [ {role, text} ],
   settings: { apiKey, modelSmart, modelFast },
   lastExport

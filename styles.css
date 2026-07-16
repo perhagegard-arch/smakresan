@@ -196,4 +196,15 @@ footer{margin-top:36px;text-align:center;color:var(--paper-dim);font-size:12px}
 
 .notice{background:var(--panel);border:1px solid var(--gold-soft);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--paper-dim);margin:10px 0}
 
+/* ===== Fredagssnurran ===== */
+.spin-stage{min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px 0}
+.spin-name{font-family:'Libre Caslon Text',serif;font-size:23px;line-height:1.2}
+.spin-win{animation:winpulse .55s ease 3;color:var(--gold)}
+@keyframes winpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+
+/* ===== Gästprovning: jämförelse ===== */
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:14px}
+.cmp .mono{margin-bottom:4px}
+.cmp p{margin:0}
+
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
