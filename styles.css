@@ -22,11 +22,11 @@ body{background:var(--forest);color:var(--paper);font-family:'IBM Plex Sans',san
 /* ===== Hero-fotot – litet kort, samma bredd som resten av appen ===== */
 .hero-card{margin-top:18px;border-radius:12px;overflow:hidden;border:1px solid var(--line);
   box-shadow:0 6px 18px rgba(0,0,0,.35)}
-.hero-card img{width:100%;aspect-ratio:1120/308;object-fit:cover;display:block}
+.hero-card img{width:100%;aspect-ratio:1120/287;object-fit:cover;display:block}
 
 /* ===== Märket – sigill + namn på solid botten, inget foto i vägen ===== */
-.brand{text-align:center;padding:26px 0 6px}
-.brand-seal{display:block;margin:0 auto 16px}
+.brand{text-align:center;padding:22px 0 6px}
+.brand-seal{display:block;margin:0 auto 14px}
 .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--peat)}
 h1{font-family:'Yeseva One',serif;font-weight:400;font-size:clamp(36px,10vw,52px);line-height:1;margin:8px 0 6px}
 .sub{font-family:'Cinzel',serif;font-weight:700;font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--paper-dim)}
