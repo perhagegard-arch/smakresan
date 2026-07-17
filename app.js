@@ -493,14 +493,18 @@ function renderMastaren(){
       '<button class="btn ghost" onclick="dismissSuggestion()">Nej tack</button></div>';
   }
 
-  h += '<div class="chat-input"><textarea id="chatField" placeholder="Fråga Mästaren …" '+(state.settings.apiKey?"":"disabled")+'></textarea>'+
-    '<button id="chatSend" '+(state.settings.apiKey&&!chatBusy?"":"disabled")+'>➤</button></div>';
-  h += '<button class="btn ghost" style="margin-top:12px" id="suggestBtn" '+(state.settings.apiKey&&!chatBusy?"":"disabled")+'>✨ Föreslå ny provning utifrån min dagbok</button>';
+  if(state.settings.apiKey){
+    h += '<div class="chat-input"><textarea id="chatField" placeholder="Fråga Mästaren …"></textarea>'+
+      '<button id="chatSend" '+(chatBusy?"disabled":"")+'>➤</button></div>';
+    h += '<button class="btn ghost" style="margin-top:12px" id="suggestBtn" '+(chatBusy?"disabled":"")+'>✨ Föreslå ny provning utifrån min dagbok</button>';
+  } else {
+    h += '<button class="btn ghost" id="goToKeyBtn">⚙️ Lägg in API-nyckel för att väcka Mästaren</button>';
+  }
   if(state.chat.length) h += '<div class="danger" style="margin-top:10px"><button id="clearChatBtn">Rensa chatten</button></div>';
 
   // Inställningar
   const f = state.fridge;
-  h += '<div class="settings-box"><details><summary>⚙️ Inställningar</summary><div class="inner-set">'+
+  h += '<div class="settings-box"><details id="settingsDetails"><summary>⚙️ Inställningar</summary><div class="inner-set">'+
     '<div class="field"><label>Anthropic API-nyckel</label><input type="password" id="setKey" value="'+esc(state.settings.apiKey)+'" placeholder="sk-ant-…" autocomplete="off">'+
     '<div class="hint">Nyckeln sparas bara i din webbläsare och skickas aldrig någon annanstans än till Anthropic. Skapa en på console.anthropic.com.</div></div>'+
     '<div class="set-row"><button class="btn small" id="saveKeyBtn">Spara</button><button class="btn ghost small" id="testKeyBtn">Testa nyckeln</button></div>'+
@@ -516,6 +520,15 @@ function renderMastaren(){
     '<div class="danger"><button id="resetBtn">Nollställ all data</button></div>'+
     '</div></details></div>';
   return h;
+}
+
+function goToSettings(){
+  const d = $("settingsDetails");
+  if(!d) return;
+  d.open = true;
+  if(d.scrollIntoView) d.scrollIntoView({behavior:"smooth", block:"start"});
+  const key = $("setKey");
+  if(key) key.focus();
 }
 
 async function sendChat(){
@@ -1308,6 +1321,8 @@ function bindView(){
   }
   const sug = $("suggestBtn");
   if(sug) sug.addEventListener("click", suggestTastingFlow);
+  const goKey = $("goToKeyBtn");
+  if(goKey) goKey.addEventListener("click", goToSettings);
   const more = $("chatMoreBtn");
   if(more) more.addEventListener("click", () => { chatExpanded = !chatExpanded; renderView(); });
   const clearChat = $("clearChatBtn");

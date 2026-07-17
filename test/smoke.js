@@ -162,10 +162,16 @@ check("trail visar 14 stopp", d.querySelectorAll(".stop").length===14);
 /* ==== Mästaren & inställningar ==== */
 console.log("== Mästaren & inställningar ==");
 t.switchView("mastaren");
-check("chattfält inaktiverat utan nyckel", d.getElementById("chatField").disabled);
+check("inget chatField utan nyckel", !d.getElementById("chatField"));
+check("goToKeyBtn syns i stället", !!d.getElementById("goToKeyBtn"));
+click(w, d.getElementById("goToKeyBtn"));
+check("klick öppnar inställningarna", d.getElementById("settingsDetails").open === true);
 type(w, d.getElementById("setKey"), "sk-ant-test123");
 click(w, d.getElementById("saveKeyBtn"));
 check("nyckel i state", t.state.settings.apiKey==="sk-ant-test123");
+t.switchView("mastaren");
+check("chatField skrivbart med nyckel", !!d.getElementById("chatField") && !d.getElementById("chatField").disabled);
+check("goToKeyBtn borta med nyckel", !d.getElementById("goToKeyBtn"));
 t.pendingSuggestion = {q:"Testfråga?", why:"Testmotivering.", phaseName:"Fas 5 · Nya hyllan", bottles:["tal","hp"]};
 t.addSuggestedTasting();
 check("AI-provning fick n=15", t.state.tastings[0].n===15);
