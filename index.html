@@ -4,17 +4,76 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Smakresan</title>
+<meta name="theme-color" content="#1b1d1f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Smakresan">
+<link rel="icon" type="image/svg+xml" href="images/web/seal-icon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="images/web/favicon-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="images/web/favicon-64.png">
+<link rel="apple-touch-icon" href="images/web/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Yeseva+One&family=Cinzel:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+<!-- Excisstämpeln – definieras en gång, används i hero och kan återanvändas -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="seal-mark">
+      <circle cx="100" cy="100" r="92" fill="none" stroke="#eee8de" stroke-width="2.2"/>
+      <circle cx="100" cy="100" r="82" fill="none" stroke="#eee8de" stroke-width="1" opacity=".55"/>
+      <path id="ringTop" d="M28,100 a72,72 0 0 1 144,0" fill="none"/>
+      <path id="ringBot" d="M28,100 a72,72 0 0 0 144,0" fill="none"/>
+      <text font-family="Cinzel" font-weight="700" font-size="12.2" letter-spacing="2" fill="#eee8de">
+        <textPath href="#ringTop" startOffset="50%" text-anchor="middle">HAGEGÅRDS SMAKRESA</textPath>
+      </text>
+      <text font-family="Cinzel" font-weight="700" font-size="9.2" letter-spacing="2.2" fill="#9c9d9e">
+        <textPath href="#ringBot" startOffset="50%" text-anchor="middle">EST. 2026 · TORV &amp; HAV</textPath>
+      </text>
+      <g transform="translate(58,132) rotate(-14)" stroke="#b5793a" stroke-width="1.6" stroke-linecap="round" fill="#b5793a">
+        <line x1="0" y1="0" x2="0" y2="-54" stroke-width="1.8"/>
+        <path d="M0,-4 q-10,-6 -14,-16" fill="none"/>
+        <path d="M0,-46 q-10,-6 -14,-16" fill="none"/>
+        <g>
+          <ellipse cx="-4.5" cy="-10" rx="4.2" ry="2.3" transform="rotate(-35 -4.5 -10)"/>
+          <ellipse cx="4.5" cy="-16" rx="4.2" ry="2.3" transform="rotate(35 4.5 -16)"/>
+          <ellipse cx="-4.5" cy="-22" rx="4.2" ry="2.3" transform="rotate(-35 -4.5 -22)"/>
+          <ellipse cx="4.5" cy="-28" rx="4.2" ry="2.3" transform="rotate(35 4.5 -28)"/>
+          <ellipse cx="-4.5" cy="-34" rx="4.2" ry="2.3" transform="rotate(-35 -4.5 -34)"/>
+          <ellipse cx="4.5" cy="-40" rx="4.2" ry="2.3" transform="rotate(35 4.5 -40)"/>
+        </g>
+      </g>
+      <g transform="translate(142,132) rotate(14) scale(-1,1)" stroke="#b5793a" stroke-width="1.6" stroke-linecap="round" fill="#b5793a">
+        <line x1="0" y1="0" x2="0" y2="-54" stroke-width="1.8"/>
+        <path d="M0,-4 q-10,-6 -14,-16" fill="none"/>
+        <path d="M0,-46 q-10,-6 -14,-16" fill="none"/>
+        <g>
+          <ellipse cx="-4.5" cy="-10" rx="4.2" ry="2.3" transform="rotate(-35 -4.5 -10)"/>
+          <ellipse cx="4.5" cy="-16" rx="4.2" ry="2.3" transform="rotate(35 4.5 -16)"/>
+          <ellipse cx="-4.5" cy="-22" rx="4.2" ry="2.3" transform="rotate(-35 -4.5 -22)"/>
+          <ellipse cx="4.5" cy="-28" rx="4.2" ry="2.3" transform="rotate(35 4.5 -28)"/>
+          <ellipse cx="-4.5" cy="-34" rx="4.2" ry="2.3" transform="rotate(-35 -4.5 -34)"/>
+          <ellipse cx="4.5" cy="-40" rx="4.2" ry="2.3" transform="rotate(35 4.5 -40)"/>
+        </g>
+      </g>
+      <g transform="translate(83,64) scale(1.5)" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 4h12l-1.2 15a2 2 0 0 1-2 1.8H9.2a2 2 0 0 1-2-1.8L6 4z" fill="none" stroke="#eee8de" stroke-width="1.7"/>
+        <path d="M6.8 12h10.4" stroke="#b5793a" stroke-width="1.7"/>
+      </g>
+      <path d="M76,142 q6,-6 12,0 t12,0 t12,0 t12,0" fill="none" stroke="#eee8de" stroke-width="1.6" stroke-linecap="round" opacity=".85"/>
+      <path d="M78,148 q6,-5 12,0 t12,0 t12,0" fill="none" stroke="#9c9d9e" stroke-width="1.2" stroke-linecap="round" opacity=".6"/>
+    </g>
+  </defs>
+</svg>
+
 <div class="hero">
-  <img src="images/web/hero.jpg" alt="Vitmålat destilleri vid vattnet på Islay">
+  <img src="images/web/hero-duo-1600.jpg" alt="Laphroaig-magasinet vid vattnet på Islay, i skymning">
   <div class="hero-text">
     <div class="eyebrow">Provningsprotokoll</div>
     <h1>Smakresan</h1>
-    <p class="sub">Torv. Hav. Ett glas i taget.</p>
+    <p class="sub">Hagegårds Smakresa · Est. 2026</p>
+    <svg class="hero-seal" width="70" height="70" viewBox="0 0 200 200"><use href="#seal-mark"></use></svg>
   </div>
 </div>
 <div class="wrap">
