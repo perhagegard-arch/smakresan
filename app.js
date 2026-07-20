@@ -701,6 +701,11 @@ function openTasting(n){
     '<textarea id="lessonField" placeholder="t.ex. Jag gillar rök mer när den har sötma bakom sig …">'+esc(draft.lesson)+'</textarea></div>'+
     '<div class="field"><label>🎵 Lyssnade på</label><input type="text" id="musicField" value="'+esc(draft.music)+'" placeholder="t.ex. Tom Waits – Closing Time"></div></div>';
 
+  // Facit visas först när provningen är sparad – prova först, läs sen
+  if(existing && FACIT_TASTINGS[n]){
+    html += '<button class="btn ghost" style="margin-top:12px" onclick="openFacit('+n+')">🎓 Visa facit – vad borde du ha känt?</button>';
+  }
+
   openOverlay(html, {saveLabel:"Spara provningen", onSave:saveTasting});
   bindTastingOverlay();
 }
@@ -738,14 +743,83 @@ function bindTastingOverlay(){
 
 function saveTasting(){
   if(!current) return;
+  const n = current.n;
   draft.date = today();
-  state.sessions[current.n] = draft;
+  state.sessions[n] = draft;
   scheduleRetastes(draft.glasses);
   save();
-  closeOverlay();
   current = null;
   renderView();
   toast("Provning sparad!");
+  if(FACIT_TASTINGS[n]){
+    openOverlay('<div class="ov-top"><button class="back" onclick="closeOverlay()">← Stäng</button></div>'+
+      '<div class="card"><h3>✅ Provning sparad!</h3>'+
+      '<p class="muted">Du har provat med egen näsa och gom – nu kliver proffset in. Vill du veta vad du borde ha känt?</p>'+
+      '<button class="btn" onclick="openFacit('+n+')">🎓 Visa facit</button>'+
+      '<div style="height:8px"></div>'+
+      '<button class="btn ghost" onclick="closeOverlay()">Inte nu</button></div>');
+  } else {
+    closeOverlay();
+  }
+}
+
+/* ===== Facit – expertfacit efter avklarad provning ===== */
+function openFacit(n){
+  const t = allTastings().find(x => x.n === n);
+  const s = state.sessions[n];
+  const f = FACIT_TASTINGS[n];
+  if(!t || !s || !f) return; // inget facit före provningen – prova först!
+
+  let html = '<div class="ov-top"><button class="back" onclick="openTasting('+n+')">← Till provningen</button></div>'+
+    '<div class="t-phase" style="color:var(--peat)">Facit · Provning '+n+'</div>'+
+    '<h2 style="font-family:"Yeseva One",serif;font-size:24px;line-height:1.25;margin:8px 0 16px">'+esc(t.q)+'</h2>';
+
+  html += '<div class="card"><h3>🎯 Kvällens poäng</h3><p>'+esc(f.lesson)+'</p></div>';
+
+  t.bottles.forEach((id, i) => {
+    if(!f.glasses[i]) return;
+    const b = bottle(id) || {name:id, color:"#555049"};
+    const g = (s.glasses||[])[i] || {};
+    html += '<div class="glass-card"><h3>'+dotHtml(b.color,24)+'Glas '+(i+1)+' · '+esc(b.name)+'</h3>'+
+      '<p>'+esc(f.glasses[i])+'</p>'+
+      ((g.nose || g.taste) ? '<div class="note-hist"><div class="nh-t">Du skrev</div>'+
+        '<div class="nh-l">Doft: '+esc(g.nose||"–")+' · Smak: '+esc(g.taste||"–")+(g.finish ? ' · Eftersmak: '+esc(g.finish) : "")+'</div></div>' : "")+
+      '</div>';
+  });
+
+  html += '<div class="wheel"><details><summary>🧪 Därför smakar det så ▾</summary>'+
+    '<p style="margin-top:8px">'+esc(f.science)+'</p></details></div>';
+
+  [...new Set(t.bottles)].filter(id => FACIT_BOTTLES[id]).forEach(id => {
+    const b = bottle(id) || {name:id};
+    const fb = FACIT_BOTTLES[id];
+    html += '<div class="wheel"><details><summary>📜 '+esc(b.name)+' – historia & kuriosa ▾</summary>'+
+      '<p style="margin-top:8px">'+esc(fb.history)+'</p>'+
+      '<p><b>Känd för:</b> '+esc(fb.style)+'</p>'+
+      '<p><b>Kuriosa:</b> '+esc(fb.fun)+'</p></details></div>';
+  });
+
+  html += '<div class="notice" style="margin-top:12px">🧭 Inför nästa provning: '+esc(f.next)+'</div>';
+
+  if(s.aiFacit){
+    html += '<div class="card" style="margin-top:12px"><h3>🎩 Mästarens kommentar'+(s.aiFacitDate ? ' · '+esc(s.aiFacitDate) : "")+'</h3>'+
+      s.aiFacit.split(/\n{2,}/).map(p => '<p>'+esc(p)+'</p>').join("")+'</div>';
+    if(aiReady()) html += '<button class="btn ghost small" id="facitAiBtn">↻ Ny kommentar</button>';
+  } else if(aiReady()){
+    html += '<button class="btn ghost" id="facitAiBtn">🎩 Be Mästaren kommentera dina anteckningar</button>';
+  }
+
+  openOverlay(html);
+  const btn = $("facitAiBtn");
+  if(btn) btn.addEventListener("click", async () => {
+    btn.disabled = true; btn.textContent = "Mästaren läser dina anteckningar …";
+    try{
+      s.aiFacit = (await facitComment(t, s, f)).trim();
+      s.aiFacitDate = today();
+      save();
+      openFacit(n);
+    }catch(e){ toast(e.message); btn.disabled = false; btn.textContent = "🎩 Be Mästaren kommentera dina anteckningar"; }
+  });
 }
 
 /* ===== Omprovningar (spaced repetition) ===== */

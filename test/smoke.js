@@ -6,11 +6,11 @@ const fs = require("fs");
 const path = require("path");
 const DIR = path.join(__dirname, "..");
 
-const appCode = ["data.js","ai.js","app.js"].map(f => fs.readFileSync(DIR+"/"+f,"utf8")).join("\n;\n") + `
+const appCode = ["data.js","facit.js","ai.js","app.js"].map(f => fs.readFileSync(DIR+"/"+f,"utf8")).join("\n;\n") + `
 ;window.__t = {
   get state(){return state}, set state(v){state=v},
   save, renderView, switchView, setHylla, slotClick, fillSlot,
-  openTasting, openRetaste, openBottleForm, openBottleDetail,
+  openTasting, openFacit, openRetaste, openBottleForm, openBottleDetail,
   openBlind, blindStep2, blindPick, blindStep3, goToFridge,
   get blindGuess(){return blindGuess},
   get formDraft(){return formDraft},
@@ -19,6 +19,7 @@ const appCode = ["data.js","ai.js","app.js"].map(f => fs.readFileSync(DIR+"/"+f,
   encodeShare, decodeShare, openGuestInvite, openGuestView, openGuestAnswer, openSpinner,
   journalContext,
   get BOTTLE_SEED(){return BOTTLE_SEED}, get PHASES(){return PHASES}, get TASTINGS(){return TASTINGS},
+  get FACIT_TASTINGS(){return FACIT_TASTINGS}, get FACIT_BOTTLES(){return FACIT_BOTTLES},
   get QUADRANTS(){return QUADRANTS}, get TONE_MAP(){return TONE_MAP}, get FLAVOR_WHEEL(){return FLAVOR_WHEEL},
   get NEW_BOTTLE_COLORS(){return NEW_BOTTLE_COLORS}, get NEW_PHASE_COLORS(){return NEW_PHASE_COLORS},
   get STOPWORDS(){return STOPWORDS}, get RETASTE_INTERVALS(){return RETASTE_INTERVALS}
@@ -90,6 +91,36 @@ check("eftersmak sparad", t.state.sessions[2].glasses[0].finish==="Lång");
 check("musik sparad", t.state.sessions[2].music==="Otis Redding");
 check("omprovning schemalagd (red)", !!t.state.retastes["red"]);
 check("progress 2 / 14", d.querySelector(".progress .row b").textContent.trim()==="2 / 14");
+
+/* ==== Facit ==== */
+console.log("== Facit ==");
+check("efter spar: overlay kvar med facitknapp", d.getElementById("overlay").classList.contains("open") && d.getElementById("ovContent").textContent.includes("Visa facit"));
+t.openFacit(2);
+let fx = d.getElementById("ovContent").textContent;
+check("facit 2: kvällens poäng renderas", fx.includes("Kvällens poäng") && fx.includes("pot still mot amerikansk bourbon"));
+check("facit 2: glas-facit för Redbreast och Elijah", fx.includes("Redbreast") && fx.includes("Elijah"));
+check("facit 2: egna anteckningar visas (krämig grädde)", fx.includes("Du skrev") && fx.includes("krämig grädde"));
+check("facit 2: vetenskapssektion finns", fx.includes("Därför smakar det så"));
+check("facit 2: flaskhistoria (Midleton + Heaven Hill)", fx.includes("Midleton") && fx.includes("Heaven Hill"));
+check("facit 2: träningstips inför nästa", fx.includes("Inför nästa provning"));
+check("facit 2: ingen Mästar-knapp utan nyckel", !d.getElementById("facitAiBtn"));
+check("facit: tillbaka-knappen pekar mot provningen", d.querySelector("#ovContent .back").getAttribute("onclick").includes("openTasting(2)"));
+t.openTasting(2);
+check("avklarad provning visar facitknappen", d.getElementById("ovContent").textContent.includes("Visa facit"));
+t.closeOverlay();
+t.openTasting(4);
+check("oavklarad provning: ingen facitknapp", !d.getElementById("ovContent").textContent.includes("Visa facit"));
+t.openFacit(4);
+check("openFacit utan session är no-op (spoiler-skydd)", !d.getElementById("ovContent").textContent.includes("Kvällens poäng"));
+t.closeOverlay();
+t.state.sessions[13] = {glasses:[{bottle:"x",idx:0,nose:"rök",taste:"",finish:"",rating:5,flavors:[]},{bottle:"x",idx:1,flavors:[]},{bottle:"x",idx:2,flavors:[]}], lesson:"", date:"2026-07-18"};
+t.save();
+t.openFacit(13);
+fx = d.getElementById("ovContent").textContent;
+check("facit 13 (blind): metodik utan glas-facit", fx.includes("beslutsträd") && !fx.includes("Glas 1"));
+check("facit 13: inga flasksektioner (hemliga glas)", !fx.includes("historia & kuriosa"));
+t.closeOverlay();
+delete t.state.sessions[13]; t.save(); t.renderView();
 
 /* ==== Omprovning ==== */
 console.log("== Omprovning ==");
@@ -181,6 +212,11 @@ t.addSuggestedTasting();
 check("AI-provning fick n=15", t.state.tastings[0].n===15);
 check("Fas 5 skapad", t.state.phases[0].name==="Fas 5 · Nya hyllan");
 check("resan är nu 15 provningar", t.allTastings().length===15);
+t.state.sessions[15] = {glasses:[{bottle:"tal",idx:0,nose:"",taste:"",finish:"",rating:0,flavors:[]},{bottle:"hp",idx:1,nose:"",taste:"",finish:"",rating:0,flavors:[]}], lesson:"", date:"2026-07-18"};
+t.openTasting(15);
+check("AI-provning: ingen facitknapp trots session", !d.getElementById("ovContent").textContent.includes("Visa facit"));
+t.closeOverlay();
+delete t.state.sessions[15]; t.save();
 t.switchView("ikvall");
 check("progress 2 / 15", d.querySelector(".progress .row b").textContent.trim()==="2 / 15");
 
@@ -327,6 +363,14 @@ check("FLAVOR_WHEEL har 8 kategorier", Object.keys(t.FLAVOR_WHEEL).length===8);
 check("NEW_BOTTLE_COLORS har färger till nya flaskor", t.NEW_BOTTLE_COLORS.length>=4);
 check("NEW_PHASE_COLORS har färger till nya faser", t.NEW_PHASE_COLORS.length>=4);
 check("RETASTE_INTERVALS är 14/42/90 dagar", JSON.stringify(t.RETASTE_INTERVALS)===JSON.stringify([14,42,90]));
+
+/* ==== Data-integritet (facit) ==== */
+console.log("== Data-integritet (facit) ==");
+check("FACIT_TASTINGS täcker provning 1–14", Array.from({length:14},(_,i)=>i+1).every(n=>!!t.FACIT_TASTINGS[n]));
+check("facit-glas matchar antal glas (utom blinda 13)", t.TASTINGS.every(ts => ts.n===13 ? t.FACIT_TASTINGS[13].glasses.length===0 : t.FACIT_TASTINGS[ts.n].glasses.length===ts.bottles.length));
+check("alla facit-fält ifyllda och utförliga", Object.values(t.FACIT_TASTINGS).every(f => f.lesson.length>60 && f.science.length>100 && f.next.length>30 && f.glasses.every(g=>g && g.length>40)));
+check("FACIT_BOTTLES täcker alla synliga seed-flaskor", Object.keys(t.BOTTLE_SEED).filter(id=>!t.BOTTLE_SEED[id].hidden).every(id=>{const fb=t.FACIT_BOTTLES[id];return fb && fb.history && fb.style && fb.fun;}));
+check("inget facit för hemliga glaset 'x'", !t.FACIT_BOTTLES.x);
 
 /* ==== drinkAdvice(): ABV-gränser & råd ==== */
 console.log("== drinkAdvice: ABV-gränser & råd ==");
@@ -683,6 +727,35 @@ check("visibleBottles() filtrerar bort dolda 'x'", !ph.w.visibleBottles().some((
     const inst = await callWithFetch(async () => ({ok:true, status:200, json:async()=>({content:[{type:"text",text:"Rakt textsvar"}]})}));
     const res = await inst.w.callClaude({model:"x", messages:[]});
     check("lyckat svar utan schema returnerar rå text", res === "Rakt textsvar");
+  }
+
+  console.log("== Facit: Mästarens kommentar (mockad AI) ==");
+  {
+    let calls = 0;
+    const inst = await callWithFetch(async () => { calls++; return {ok:true, status:200,
+      json:async()=>({content:[{type:"text",text:"Bra jobbat med honungen!\n\nTräna på röken till nästa gång."}]})}; });
+    inst.t.openTasting(1);
+    type(inst.w, inst.d.querySelector('input[data-i="0"][data-f="nose"]'), "honung äpple");
+    click(inst.w, inst.d.getElementById("saveBtn"));
+    inst.t.openFacit(1);
+    check("med nyckel: Mästar-knapp i facit", !!inst.d.getElementById("facitAiBtn"));
+    click(inst.w, inst.d.getElementById("facitAiBtn"));
+    // mikrotask-flush räcker för den mockade fetchen – setTimeout(0) skulle
+    // också släppa fram jsdom:s uppskjutna länknavigeringar (= brus i loggen)
+    for(let i=0;i<20;i++) await Promise.resolve();
+    check("AI-kommentar cachad på sessionen", (inst.t.state.sessions[1].aiFacit||"").includes("Bra jobbat") && inst.t.state.sessions[1].aiFacitDate === inst.w.today());
+    check("kommentaren renderas i facit", inst.d.getElementById("ovContent").textContent.includes("Bra jobbat med honungen"));
+    check("exakt ett AI-anrop gjordes", calls === 1);
+    inst.t.openFacit(1);
+    check("andra öppningen: cachen visas utan nytt anrop", calls === 1 && inst.d.getElementById("ovContent").textContent.includes("Bra jobbat"));
+    const reBtn = inst.d.getElementById("facitAiBtn");
+    check("↻-knapp för ny kommentar finns", !!reBtn && reBtn.textContent.includes("Ny kommentar"));
+    const savedLS = {smakresa_v2: inst.w.localStorage.getItem("smakresa_v2")};
+    const re = boot(savedLS);
+    check("aiFacit överlever omladdning", (re.t.state.sessions[1].aiFacit||"").includes("Bra jobbat"));
+    re.t.openTasting(1);
+    click(re.w, re.d.getElementById("saveBtn")); // om-spar av befintlig session
+    check("aiFacit överlever om-spar av provningen", (re.t.state.sessions[1].aiFacit||"").includes("Bra jobbat"));
   }
 
   console.log(failures.length ? "\nFAILURES ("+failures.length+"):\n  - "+failures.join("\n  - ") : "\nALLA TESTER GRÖNA");

@@ -4,6 +4,7 @@ Levande dokument – lägg till fritt. Idéerna kommer dels från benchmarken mo
 
 ## Byggt ✅
 
+- **Facit efter provningen** *(2026-07-20)* – prova först, läs sen: när en provning sparats låses ett expertfacit upp (diskret 🎓-knapp) med vad du borde ha känt per glas, kvällens poäng, fatkemin bakom, destillerihistoria & kuriosa och ett träningstips mot nästa provning. Med API-nyckel kan Mästaren dessutom kommentera just dina anteckningar (cachas – kostar en gång per provning). Innehållet är förskrivet i `facit.js` och funkar helt offline.
 - **Signaturlåt per flaska** *(2026-07-16)* – varje flaska har en egen låt med Spotify-länk; kvällens flaskors låtar visas först i Kvällens ton. AI kan föreslå.
 - **Gästprovning med engångslänk** *(2026-07-16, idé från Pers Köks gästmiddagar)* – bjud in en gäst via länk (all data reser i själva länken, ingen server); gästen antecknar på sin mobil och skickar tillbaka en svarslänk; jämförelse sida vid sida, sparas under Resan.
 - **Fredagssnurran** *(2026-07-16)* – viktat lyckohjul bland öppna flaskor; det du inte rört på länge har större chans.

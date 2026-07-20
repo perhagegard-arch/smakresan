@@ -179,6 +179,32 @@ async function generateTasting(extraWish){
   });
 }
 
+/* Mästarens kommentar till användarens anteckningar mot facit
+   (cacheas på sessionen – kostar bara en gång per provning) */
+async function facitComment(t, s, f){
+  const notes = (s.glasses||[]).map((g, i) => {
+    const b = bottle(g.bottle);
+    return "Glas "+(i+1)+" ("+(b ? b.name : g.bottle)+'): doft "'+(g.nose||"–")+'", smak "'+(g.taste||"–")+'", eftersmak '+(g.finish||"–")+
+      ", betyg "+(g.rating||"–")+
+      (g.flavors && g.flavors.length ? ", smakord: "+g.flavors.join("/") : "")+
+      (g.noseWater || g.tasteWater ? ' · efter vatten: doft "'+(g.noseWater||"–")+'", smak "'+(g.tasteWater||"–")+'"' : "");
+  }).join("\n");
+  return callClaude({
+    model: state.settings.modelFast,
+    maxTokens: 800,
+    system:"Du är Mästaren – en varm men rak whiskymentor i appen Smakresan. "+
+      'FACIT för provningen "'+t.q+'":\nPoäng: '+f.lesson+"\n"+
+      (f.glasses||[]).map((g,i) => "Glas "+(i+1)+": "+g).join("\n")+
+      "\nBakgrund: "+f.science,
+    messages:[{role:"user",content:
+      "Användarens anteckningar från provningen:\n"+(notes||"(inga)")+
+      (s.lesson ? '\nEgen lärdom: "'+s.lesson+'"' : "")+
+      "\n\nJämför med facit och skriv 2–3 korta stycken på svenska, direkt till användaren: "+
+      "vad hen prickade, vad hen missade, och ETT konkret träningstips inför nästa provning. "+
+      "Uppmuntra utan att fjäska."}]
+  });
+}
+
 /* En extra mentormening till drickrådskortet (cacheas på flaskan) */
 async function enrichAdvice(b){
   return callClaude({
