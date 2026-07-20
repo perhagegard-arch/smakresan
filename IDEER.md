@@ -12,7 +12,7 @@ Levande dokument – lägg till fritt. Idéerna kommer dels från benchmarken mo
 ## Från Pers Kök & utanför boxen (2026-07-16)
 
 - [ ] **Hall of Fame & Hall of Shame** *(Pers Kök)* – topplista över dina bästa OCH sämsta drammar, med citat ur anteckningarna. Skammen är halva nöjet.
-- [ ] **Whisky till maten – bryggan till Pers Kök** – "ikväll blir det viltgryta": AI:n parar middagen mot whiskyhyllan. På sikt en knapp i Pers Kök som frågar Pers whiskeyresa om avecen.
+- [ ] **Whisky till maten – bryggan till Pers Kök** – "ikväll blir det viltgryta": AI:n parar middagen mot whiskyhyllan. På sikt en knapp i Pers Kök som frågar Pers whiskyresa om avecen.
 - [ ] **Öppen flaska-klockan** *(Pers Köks "Bör ätas snart")* – öppningsdatum + fyllnadsnivå (visuell flaska som töms); under en tredjedel kvar = oxidationsvarning: "prioritera Uigeadail, öppnad för 14 månader sen".
 - [ ] **Ditt Whiskyår (Wrapped)** *(Pers Köks källarstatistik)* – årsrapport i december: mest provade region, betygskurva, kr-per-njutningspoäng, totalvärde, årets citat. Delbar som bild.
 - [ ] **Dela hyllan** *(Pers Köks "Dela min källare")* – generera en snygg läs-bild/sida av hyllan + smakkartan att skryta med.

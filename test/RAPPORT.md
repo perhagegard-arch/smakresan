@@ -1,4 +1,4 @@
-# Testrapport – Pers whiskeyresa
+# Testrapport – Pers whiskyresa
 
 Utökning av röktestsviten från 91 till **222 kontroller** (`test/smoke.js`), kört med jsdom. Mål: täcka in allt som byggts/ändrats på sistone (Kustlinjen-omgörningen, Excisstämpeln-loggan, gästprovning, Fredagssnurran, signaturlåtar, Mästaren-UX-fixen) och leta upp sådant som kan ha missats.
 

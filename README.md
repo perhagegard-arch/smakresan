@@ -1,4 +1,4 @@
-# Pers whiskeyresa 🥃
+# Pers whiskyresa 🥃
 
 En personlig whisky-lärapp. 14 kurerade provningar, en fråga i taget – och verktygen för att träna gommen på riktigt: omprovningar utan facit, blindprovningar, smakkarta, kylkarta och en AI-mentor.
 
@@ -80,7 +80,7 @@ De 14 kurerade provningarna och seed-flaskorna bor i `data.js`; `allTastings()` 
 
 ### Säkerhetskopia
 
-Export ger en JSON-fil (`pers-whiskeyresa-backup-ÅÅÅÅ-MM-DD.json`) med allt utom API-nyckeln – **nyckeln exporteras aldrig**. Foton är valfria i exporten. Import ersätter all data efter bekräftelse. Ikväll-fliken påminner om senaste exporten är äldre än 30 dagar.
+Export ger en JSON-fil (`pers-whiskyresa-backup-ÅÅÅÅ-MM-DD.json`) med allt utom API-nyckeln – **nyckeln exporteras aldrig**. Foton är valfria i exporten. Import ersätter all data efter bekräftelse. Ikväll-fliken påminner om senaste exporten är äldre än 30 dagar.
 
 ### Utveckling & test
 
@@ -91,7 +91,7 @@ cd test && npm install jsdom && node smoke.js   # ska sluta med ALL TESTS PASSED
 ```
 
 Deployas via GitHub Pages: `git push` räcker, live på
-`perhagegard-arch.github.io/pers-whiskeyresa` efter ~1 min (CDN kan cachea några min till).
+`perhagegard-arch.github.io/pers-whiskyresa` efter ~1 min (CDN kan cachea några min till).
 
 Viktiga konventioner i koden:
 - **Svenskt UI** överallt.

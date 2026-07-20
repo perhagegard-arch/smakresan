@@ -1,4 +1,4 @@
-/* ================= Pers whiskeyresa – seed-data =================
+/* ================= Pers whiskyresa – seed-data =================
    Statiskt innehåll. Användarens flaskor bor i localStorage
    (seedas härifrån vid första start). */
 

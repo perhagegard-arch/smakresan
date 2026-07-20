@@ -1,4 +1,4 @@
-/* Röktest av Pers whiskeyresa i jsdom.
+/* Röktest av Pers whiskyresa i jsdom.
    OBS: i webbläsaren delar separata <script>-taggar globalt let-scope;
    i jsdom-eval måste filerna konkateneras för samma effekt. */
 const {JSDOM} = require("jsdom");
@@ -480,7 +480,7 @@ importState.settings.apiKey = "";
 importState.bottles.tal.name = "Talisker (från backup)";
 // Medvetet kvar med det gamla apptaggnamnet: importData() (app.js) validerar
 // aldrig fältet "app" (bara state.version), så det här dubblar som ett bevis
-// på att säkerhetskopior exporterade före namnbytet Smakresan→Pers whiskeyresa
+// på att säkerhetskopior exporterade före namnbytena Smakresan→Pers whiskeyresa→Pers whiskyresa
 // fortfarande går att importera.
 const importJson = JSON.stringify({app:"smakresan", exportedAt:"2026-01-01T00:00:00.000Z", state: importState, photos:{}});
 fresh.w.importData({__text: importJson});

@@ -1,4 +1,4 @@
-/* ================= Pers whiskeyresa – facit =================
+/* ================= Pers whiskyresa – facit =================
    Expertfacit som låses upp EFTER att en provning sparats.
    Först provar du – sen berättar proffset vad du borde ha känt.
    FACIT_BOTTLES skrivs en gång per flaska och återanvänds av
@@ -15,7 +15,7 @@ const FACIT_BOTTLES = {
     style:"Honung, vanilj och mjuk sherryfrukt. DoubleWood 12 är själva definitionen av 'finish': först bourbonfat i många år, sedan cirka nio månader i oloroso-sherryfat.",
     fun:"Malt mastern David C. Stewart började på destilleriet 1962 och räknas som fatfinishens uppfinnare – DoubleWood från 1993 var en av de allra första."},
   red:{
-    history:"Redbreast görs på Midleton-destilleriet i grevskapet Cork och är den stora klassikern inom irländsk single pot still – stilen där mäsken blandar mältat och omältat korn och destilleras tre gånger. Namnet, 'rödhaken', föddes 1912 hos vinhandlaren Gilbey's som då lagrade och buteljerade whiskeyn åt destilleriet.",
+    history:"Redbreast görs på Midleton-destilleriet i grevskapet Cork och är den stora klassikern inom irländsk single pot still – stilen där mäsken blandar mältat och omältat korn och destilleras tre gånger. Namnet, 'rödhaken', föddes 1912 hos vinhandlaren Gilbey's som då lagrade och buteljerade whiskyn åt destilleriet.",
     style:"Krämig, nästan oljig munkänsla med kryddighet från det omältade kornet och torkad frukt från oloroso-faten – pot still-stilens signum.",
     fun:"Det omältade kornet var från början ett sätt att slippa engelsk skatt på mältat korn – ett skattetrick som råkade bli en hel smakstil."},
   eli:{
