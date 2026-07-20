@@ -1,4 +1,4 @@
-/* ================= Smakresan – facit =================
+/* ================= Pers whiskeyresa – facit =================
    Expertfacit som låses upp EFTER att en provning sparats.
    Först provar du – sen berättar proffset vad du borde ha känt.
    FACIT_BOTTLES skrivs en gång per flaska och återanvänds av

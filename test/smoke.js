@@ -1,4 +1,4 @@
-/* Röktest av Smakresan i jsdom.
+/* Röktest av Pers whiskeyresa i jsdom.
    OBS: i webbläsaren delar separata <script>-taggar globalt let-scope;
    i jsdom-eval måste filerna konkateneras för samma effekt. */
 const {JSDOM} = require("jsdom");
@@ -478,6 +478,10 @@ fresh.w.FileReader = function(){
 const importState = JSON.parse(JSON.stringify(exported.state));
 importState.settings.apiKey = "";
 importState.bottles.tal.name = "Talisker (från backup)";
+// Medvetet kvar med det gamla apptaggnamnet: importData() (app.js) validerar
+// aldrig fältet "app" (bara state.version), så det här dubblar som ett bevis
+// på att säkerhetskopior exporterade före namnbytet Smakresan→Pers whiskeyresa
+// fortfarande går att importera.
 const importJson = JSON.stringify({app:"smakresan", exportedAt:"2026-01-01T00:00:00.000Z", state: importState, photos:{}});
 fresh.w.importData({__text: importJson});
 check("import ersätter flaskdata (Taliskers namn ändrat)", fresh.t.state.bottles.tal.name === "Talisker (från backup)");

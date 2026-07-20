@@ -5,7 +5,7 @@
 <path id="ringTop" d="M28,100 a72,72 0 0 1 144,0" fill="none"/>
 <path id="ringBot" d="M28,100 a72,72 0 0 0 144,0" fill="none"/>
 <text font-family="Cinzel" font-weight="700" font-size="12.2" letter-spacing="2" fill="#eee8de">
-  <textPath href="#ringTop" startOffset="50%" text-anchor="middle">HAGEGÅRDS SMAKRESA</textPath>
+  <textPath href="#ringTop" startOffset="50%" text-anchor="middle">PERS WHISKEYRESA</textPath>
 </text>
 <text font-family="Cinzel" font-weight="700" font-size="9.2" letter-spacing="2.2" fill="#9c9d9e">
   <textPath href="#ringBot" startOffset="50%" text-anchor="middle">EST. 2026 · TORV &amp; HAV</textPath>

@@ -1,4 +1,4 @@
-/* ================= Smakresan – applikation ================= */
+/* ================= Pers whiskeyresa – applikation ================= */
 
 const KEY = "smakresa_v2";
 const V1KEY = "smakresa_v1";
@@ -588,10 +588,10 @@ function exportData(){
   const includePhotos = Object.keys(photos).length ? confirm("Ta med flaskfoton i säkerhetskopian? (Filen blir större.)") : false;
   const st = JSON.parse(JSON.stringify(state));
   st.settings.apiKey = ""; // nyckeln exporteras aldrig
-  const blob = new Blob([JSON.stringify({app:"smakresan", exportedAt:new Date().toISOString(), state:st, photos:includePhotos?photos:{}}, null, 1)], {type:"application/json"});
+  const blob = new Blob([JSON.stringify({app:"pers-whiskeyresa", exportedAt:new Date().toISOString(), state:st, photos:includePhotos?photos:{}}, null, 1)], {type:"application/json"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "smakresan-backup-"+today()+".json";
+  a.download = "pers-whiskeyresa-backup-"+today()+".json";
   a.click();
   URL.revokeObjectURL(a.href);
   state.lastExport = today();
@@ -612,7 +612,7 @@ function importData(file){
       save(); savePhotos();
       toast("Säkerhetskopian är återställd!");
       renderView();
-    }catch(e){ alert("Filen gick inte att läsa – är det en Smakresan-backup?"); }
+    }catch(e){ alert("Filen gick inte att läsa – är det en Pers whiskeyresa-backup?"); }
   };
   reader.readAsText(file);
 }
@@ -1035,7 +1035,7 @@ function openGuestInvite(n){
 let guestDraft = null;
 function openGuestView(inv){
   guestDraft = {v:1, n:inv.n, name:"", glasses:(inv.glasses||[]).map(g => ({label:g.label, name:g.name||null, nose:"", taste:"", rating:0}))};
-  let html = '<div class="ov-top"><span class="mono">Smakresan · Gästprovning</span></div>'+
+  let html = '<div class="ov-top"><span class="mono">Pers whiskeyresa · Gästprovning</span></div>'+
     '<h2 style="font-family:"Yeseva One",serif;font-size:24px;line-height:1.25;margin:0 0 6px">🥃 Du är bjuden på provning!</h2>'+
     '<p class="muted" style="margin-bottom:16px">'+esc(inv.host||"Värden")+' undrar: «'+esc(inv.q||"")+'» — skriv vad du känner, utan att snegla på värdens anteckningar.</p>'+
     '<div class="field"><label>Ditt namn</label><input type="text" id="gName" placeholder="t.ex. Maria"></div>';

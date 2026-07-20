@@ -1,4 +1,4 @@
-/* ================= Smakresan – AI-lager =================
+/* ================= Pers whiskeyresa – AI-lager =================
    Anropar Anthropic-API:et direkt från webbläsaren med
    användarens egen nyckel (sparas bara i localStorage). */
 
@@ -150,7 +150,7 @@ async function askMastaren(chatMessages){
   return callClaude({
     model: state.settings.modelSmart,
     maxTokens: 10000, // Sonnet 5 tänker adaptivt och tankarna räknas in – ge gott om utrymme
-    system:"Du är Mästaren – en varm men rak whiskymentor i appen Smakresan. "+
+    system:"Du är Mästaren – en varm men rak whiskymentor i appen Pers whiskeyresa. "+
       "Användaren är nybörjare som tränar sin gom med provningar hemma på helgerna. "+
       "Svara kort och konkret på svenska, max några stycken. Använd bara flaskor som finns på användarens hylla "+
       "när du föreslår provningar. Uppmuntra utan att fjäska.\n\n"+journalContext(),
@@ -165,7 +165,7 @@ async function generateTasting(extraWish){
   return callClaude({
     model: state.settings.modelSmart,
     maxTokens: 8000, // rymmer adaptivt tänkande + det strukturerade svaret
-    system:"Du designar nästa provning i appen Smakresan. "+journalContext(),
+    system:"Du designar nästa provning i appen Pers whiskeyresa. "+journalContext(),
     messages:[{role:"user",content:
       "Föreslå EN ny provning (1–3 glas) som lär användaren något nytt utifrån dagboken ovan. "+
       "Undvik att upprepa exakt samma jämförelser som redan gjorts. "+
@@ -192,7 +192,7 @@ async function facitComment(t, s, f){
   return callClaude({
     model: state.settings.modelFast,
     maxTokens: 800,
-    system:"Du är Mästaren – en varm men rak whiskymentor i appen Smakresan. "+
+    system:"Du är Mästaren – en varm men rak whiskymentor i appen Pers whiskeyresa. "+
       'FACIT för provningen "'+t.q+'":\nPoäng: '+f.lesson+"\n"+
       (f.glasses||[]).map((g,i) => "Glas "+(i+1)+": "+g).join("\n")+
       "\nBakgrund: "+f.science,

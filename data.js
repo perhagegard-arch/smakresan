@@ -1,4 +1,4 @@
-/* ================= Smakresan – seed-data =================
+/* ================= Pers whiskeyresa – seed-data =================
    Statiskt innehåll. Användarens flaskor bor i localStorage
    (seedas härifrån vid första start). */
 
