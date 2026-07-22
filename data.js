@@ -14,7 +14,7 @@ const BOTTLE_SEED = {
        flavour:{x:0.60,y:0.05}, song:{artist:"The Dubliners",title:"Whiskey in the Jar"}},
   eli:{name:"Elijah Craig", color:"#9A4E1E", distillery:"Heaven Hill", region:"Kentucky, USA",
        type:"Bourbon", abv:47, cask:"Ny kolad amerikansk ek", price:null,
-       flavour:{x:0.55,y:0.10}, song:{artist:"Chris Stapleton",title:"Tennessee Whiskey"}},
+       flavour:{x:0.65,y:0.15}, song:{artist:"Chris Stapleton",title:"Tennessee Whiskey"}},
   tal:{name:"Talisker 10", color:"#CE9440", distillery:"Talisker", region:"Isle of Skye, Skottland",
        type:"Single malt", abv:45.8, cask:"Ex-bourbon", price:null,
        flavour:{x:0.55,y:0.55}, song:{artist:"The Waterboys",title:"Fisherman's Blues"}},

@@ -45,6 +45,20 @@ function fillDefaults(st){
       b.song = {artist:seed.song.artist, title:seed.song.title};
     }
   });
+  // Engångskorrigeringar: sant fel i seed-datan som redan hunnit sparas hos
+  // användare innan det rättades (bottles seedas bara vid FÖRSTA starten,
+  // så ändringar i BOTTLE_SEED når annars aldrig befintlig sparad data)
+  const ben = st.bottles && st.bottles.ben;
+  if(ben && ben.name === "Benriach 10"){
+    // Benriach 10 slutade säljas på Systembolaget – bytt till Aberlour 12
+    Object.assign(ben, {name:"Aberlour 12", color:"#B26A2E", distillery:"Aberlour",
+      abv:40, cask:"Bourbon & oloroso-sherry (parallell lagring)"});
+  }
+  const eli = st.bottles && st.bottles.eli;
+  if(eli && eli.flavour && eli.flavour.x === 0.55 && eli.flavour.y === 0.10){
+    // Delade tidigare koordinater med Appleton 12 och doldes bakom den på smakkartan
+    eli.flavour = {x:0.65, y:0.15};
+  }
   return st;
 }
 function load(){

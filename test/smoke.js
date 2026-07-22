@@ -327,6 +327,11 @@ for(let i=0;i<w.localStorage.length;i++){ const k=w.localStorage.key(i); saved[k
 // Simulera gammal data utan signaturlåt på hp (som Pers riktiga mobil-state)
 const oldState = JSON.parse(saved["smakresa_v2"]);
 delete oldState.bottles.hp.song;
+// Simulera Pers riktiga läge: ben fortfarande seedad som Benriach 10, och
+// elis gamla kolliderande koordinater med Appleton 12 (samma bugg som gjorde
+// att Elijah Craig doldes bakom Appleton på smakkartan)
+Object.assign(oldState.bottles.ben, {name:"Benriach 10", color:"#DCB25E", distillery:"Benriach", abv:43, cask:"Bourbon, sherry & ny ek"});
+oldState.bottles.eli.flavour = {x:0.55, y:0.10};
 saved["smakresa_v2"] = JSON.stringify(oldState);
 const second = boot(saved);
 check("bootar igen utan fel", second.jsErrors.length===0);
@@ -340,6 +345,21 @@ check("gästprovning kvar efter omladdning", second.t.state.guests.length === 1)
 check("saknad signaturlåt fylls på från seed (hp)", second.t.state.bottles.hp.song && second.t.state.bottles.hp.song.title === "Blue in Green");
 check("egen ändrad låt rörs inte (tal)", second.t.state.bottles.tal.song.title === "Whisky Trench Blues");
 check("påfyllnaden sparas till localStorage", JSON.parse(second.w.localStorage.getItem("smakresa_v2")).bottles.hp.song.title === "Blue in Green");
+check("gammal Benriach 10 migreras till Aberlour 12", second.t.state.bottles.ben.name==="Aberlour 12" && second.t.state.bottles.ben.distillery==="Aberlour" && second.t.state.bottles.ben.abv===40 && second.t.state.bottles.ben.color==="#B26A2E");
+check("elis gamla kolliderande koordinater rättas (skilda från Appleton 12)", second.t.state.bottles.eli.flavour.x===0.65 && second.t.state.bottles.eli.flavour.y===0.15);
+check("migrationerna sparas till localStorage", (() => {
+  const s = JSON.parse(second.w.localStorage.getItem("smakresa_v2"));
+  return s.bottles.ben.name==="Aberlour 12" && s.bottles.eli.flavour.x===0.65;
+})());
+
+console.log("== Migration rör aldrig egna anpassningar ==");
+const custom = JSON.parse(JSON.stringify(oldState));
+custom.bottles.ben.name = "Min egen Speyside"; // användaren har själv döpt om flaskan
+custom.bottles.eli.flavour = {x:0.42, y:0.30}; // användaren har själv dragit reglagen
+const customSaved = Object.assign({}, saved, {smakresa_v2: JSON.stringify(custom)});
+const third = boot(customSaved);
+check("egen omdöpt ben-flaska rörs inte av Aberlour-migrationen", third.t.state.bottles.ben.name==="Min egen Speyside");
+check("egen inställd eli-koordinat rörs inte av kollisionsfixen", third.t.state.bottles.eli.flavour.x===0.42 && third.t.state.bottles.eli.flavour.y===0.30);
 
 /* ==== Data-integritet (seed-data) ==== */
 console.log("== Data-integritet (seed-data) ==");
@@ -362,6 +382,15 @@ check("varje TONE_MAP-post har minst två spår", Object.values(t.TONE_MAP).ever
 check("FLAVOR_WHEEL har 8 kategorier", Object.keys(t.FLAVOR_WHEEL).length===8);
 check("NEW_BOTTLE_COLORS har färger till nya flaskor", t.NEW_BOTTLE_COLORS.length>=4);
 check("NEW_PHASE_COLORS har färger till nya faser", t.NEW_PHASE_COLORS.length>=4);
+check("ingen flaska delar exakt kartkoordinat med en annan (döljer annars varandra på smakkartan)", (() => {
+  const seen = new Set();
+  return Object.values(t.BOTTLE_SEED).filter(b=>!b.hidden&&b.flavour).every(b => {
+    const key = b.flavour.x+","+b.flavour.y;
+    if(seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+})());
 check("RETASTE_INTERVALS är 14/42/90 dagar", JSON.stringify(t.RETASTE_INTERVALS)===JSON.stringify([14,42,90]));
 
 /* ==== Data-integritet (facit) ==== */
