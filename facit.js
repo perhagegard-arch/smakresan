@@ -7,9 +7,9 @@
 
 const FACIT_BOTTLES = {
   ben:{
-    history:"Benriach grundades 1898 av John Duff – mitt i den stora whiskykraschen. Destilleriet stängde redan efter två år och stod sedan tyst i över sextio år innan det väcktes till liv 1965. Länge var det en anonym leverantör till blends; sedan Brown-Forman tog över 2016 har mästerblendaren Rachel Barrie gjort om hela sortimentet och gett destilleriet en egen röst.",
-    style:"Kännetecknet är fatlek: Benriach blandar gärna bourbon, sherry och ny ek i samma buteljering, och är en av få Speysides som också röker en del av sin malt.",
-    fun:"Destilleriet har kvar sina gamla mältningsgolv och mältar fortfarande eget korn några veckor om året – mest för traditionens skull."},
+    history:"Aberlour grundades 1879 av James Fleming vid bäcken Lour i hjärtat av Speyside – namnet betyder ungefär 'mynningen av den mumlande bäcken'. 12-åringen (Double Cask Matured) är destilleriets folkliga ansikte utåt och har länge varit en av Frankrikes mest sålda single malter.",
+    style:"Två fat vattnas samman till en whisky: amerikansk ex-bourbonek ger vanilj och lätthet, spansk oloroso-sherry ger nötighet och torkad frukt – en varm, lättillgänglig Speyside-klassiker vid 40 %.",
+    fun:"Samma destilleri gör också a'Bunadh, som du möter längre fram i resan (provning 8–9) – en helt obehandlad fatstyrkeversion av samma sherrykaraktär, för den som vill ha samma smak i mycket större format."},
   bal:{
     history:"The Balvenie byggdes 1892 av William Grant, vägg i vägg med Glenfiddich i Dufftown, och ägs än idag av familjen Grant. Det är ett av få destillerier som fortfarande gör nästan allt själva: odlar eget korn, mältar på golv och har både egen tunnbindare och egen kopparslagare.",
     style:"Honung, vanilj och mjuk sherryfrukt. DoubleWood 12 är själva definitionen av 'finish': först bourbonfat i många år, sedan cirka nio månader i oloroso-sherryfat.",
@@ -58,12 +58,12 @@ const FACIT_BOTTLES = {
 
 const FACIT_TASTINGS = {
   1:{
-    lesson:"Samma region, samma mjuka stil – men olika fat. Kvällens poäng: merparten av smaken (ofta sägs 60–80 %) kommer från fatet, inte från destilleriet. Kunde du peka ut vilket glas som hade sherryfinishen har näsan redan börjat jobba.",
+    lesson:"Två Speysides, samma familj av fat – men olika dos. Aberlour mognar parallellt i både bourbon- och sherryfat hela lagringstiden, Balvenie tillbringar bara några månader i sherryfat på slutet som finish. Kvällens poäng: sherrykaraktär handlar lika mycket om HUR LÄNGE och HUR som OM fatet användes alls. Kändes det ena helgjutet sherrigt och det andra mer kryddat på toppen?",
     glasses:[
-      "Benriach 10: ljus och fruktig – äpple, persika, vanilj och en grön, lite 'nysågad' ekton från den nya eken. Pigg och ungdomlig i stilen.",
-      "Balvenie 12: rundare och sötare – honung, russin och en nötig värme från månaderna i sherryfat. Känns 'mörkare' i doften trots nästan samma färg."],
-    science:"Bourbonfat av amerikansk ek ger vanilj och kokos (vanillin och laktoner ur det rostade träet). Ny ek ger samma ämnen men råare och i högre dos. Sherryfat av europeisk ek har dessutom hunnit dra åt sig oxiderat vin: torkad frukt, nötter och en mörkare strävhet från mer garvsyra. Två Speysides med snarlik sprit blir därför olika – fatet är förklaringen.",
-    next:"Nästa gång byter vi land helt. Ta med dig känslan av 'friskt mot sött' – den skillnaden kommer tillbaka i mycket större format."},
+      "Aberlour 12: honung, äpple och vanilj från bourbonfaten vävs ihop med nötig sherrysötma och lite russin – sherryn är med genom hela smaken, inte bara på slutet.",
+      "Balvenie 12: malt och honung i botten, med sherryns russin och nötighet som en kort, varm eftersmak sist i glaset – finishen märks, men tar aldrig över kärnan."],
+    science:"Sherryfat av spansk/europeisk ek har dragit åt sig oxiderat vin: nötter, torkad frukt och en mörkare strävhet av garvsyra. Hur mycket som hamnar i glaset styrs av kontakttid: Aberlour ligger i sherryfat parallellt med bourbonfaten hela sin livstid och blandas sedan ihop ('double cask'), medan Balvenies sprit bara flyttas över till sherryfat de sista månaderna som en snabb ytbehandling – en finish. Samma fatsort, helt olika dos.",
+    next:"Nästa gång byter vi land helt. Men minns skalan 'lite sherry mot mycket sherry' – i provning 9 möter Balvenie sin motpol: Aberlours syskon a'Bunadh, ren fatstyrke-sherry utan spädning."},
   2:{
     lesson:"Kvällens kontrast sitter i både råvara och fat: irländsk pot still mot amerikansk bourbon. Det här är förmodligen den största smakskillnad du kan få mellan två ljusa, orökta glas.",
     glasses:[
@@ -82,7 +82,7 @@ const FACIT_TASTINGS = {
   4:{
     lesson:"Samma mjuka grundstil – men Talisker lägger till rök, peppar och salt. Ikväll handlar det om att isolera vad 'rök' egentligen är: känn hur den lägger sig ovanpå frukten utan att ta bort den.",
     glasses:[
-      "Benriach 10: din referenspunkt från provning 1 – äpple, vanilj, ny ek. Notera hur 'ren' den plötsligt känns bredvid Talisker.",
+      "Aberlour 12: din referenspunkt från provning 1 – honung, äpple och nötig sherrysötma. Notera hur mjuk och rund den känns bredvid Taliskers peppar och rök.",
       "Talisker 10: först frukt och malt, sedan rullar röken in – grillrök snarare än tjära – och allra sist husets varumärke: en pepprig sting i eftersmaken som kallas 'the Talisker catch'."],
     science:"Rök i whisky skapas vid mältningen: kornet torkas över brinnande torv och rökens fenoler fastnar på kornet. Mängden mäts i ppm fenoler – Talisker ligger kring 18–22 ppm, att jämföra med Islay-malt på 40–55. Pepparn tros komma från den korta, intensiva destillationen och den gammaldags kylningen i worm tubs.",
     next:"Nästa provning skruvar upp röken rejält. Lägg Taliskers nivå på minnet – den blir din mittpunkt på rökskalan."},

@@ -3,8 +3,8 @@
    (seedas härifrån vid första start). */
 
 const BOTTLE_SEED = {
-  ben:{name:"Benriach 10", color:"#DCB25E", distillery:"Benriach", region:"Speyside, Skottland",
-       type:"Single malt", abv:43, cask:"Bourbon, sherry & ny ek", price:null,
+  ben:{name:"Aberlour 12", color:"#B26A2E", distillery:"Aberlour", region:"Speyside, Skottland",
+       type:"Single malt", abv:40, cask:"Bourbon & oloroso-sherry (parallell lagring)", price:null,
        flavour:{x:0.35,y:0.10}, song:{artist:"Van Morrison",title:"Sweet Thing"}},
   bal:{name:"Balvenie 12", color:"#DCA84E", distillery:"The Balvenie", region:"Speyside, Skottland",
        type:"Single malt", abv:40, cask:"Bourbon + sherryfinish (DoubleWood)", price:null,
@@ -51,13 +51,13 @@ const PHASES = [
 
 const TASTINGS = [
   {n:1,phase:1,q:"Vad gör faten med samma stil?",bottles:["ben","bal"],
-   why:"Två mjuka Speysides sida vid sida. Benriach har ny ek i mixen, Balvenie sherryfinish. Liten skillnad – perfekt för att träna näsan från start."},
+   why:"Två mjuka Speysides sida vid sida. Aberlour lagras parallellt på bourbon- och sherryfat, Balvenie har en sherryfinish på slutet. Liten skillnad – perfekt för att träna näsan från start."},
   {n:2,phase:1,q:"Irland mot Kentucky – vem vinner din gom?",bottles:["red","eli"],
    why:"Irländsk pot still (krämig, kryddig) mot amerikansk bourbon (kolad ek, choklad). Största kontrasten hittills."},
   {n:3,phase:1,q:"Tre länder, tre själar – hör du skillnaden blint?",bottles:["bal","red","eli"],
    why:"Trippel! Skottland, Irland, USA. Be Maria hälla upp utan att säga vilket glas som är vilket."},
   {n:4,phase:2,q:"Vad gör röken, egentligen?",bottles:["ben","tal"],
-   why:"Din norska semesterflaska mot Talisker. Samma mjuka bas – men Talisker adderar peppar, salt och rök. Nu börjar rökresan."},
+   why:"Din mjuka Speyside mot Talisker. Samma lena bas – men Talisker adderar peppar, salt och rök. Nu börjar rökresan."},
   {n:5,phase:2,q:"Halv rök eller full rök – var trivs du?",bottles:["tal","lap"],
    why:"Talisker viskar rök, Laphroaig ropar. Efter ikväll vet du exakt var på rökskalan ditt hjärta bor."},
   {n:6,phase:2,q:"Kan Sverige utmana Islay?",bottles:["smo","lap"],
