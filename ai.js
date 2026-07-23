@@ -95,7 +95,9 @@ async function extractLabel(dataUrl){
       {type:"image",source:{type:"base64",media_type:"image/jpeg",data:dataUrl.split(",")[1]}},
       {type:"text",text:"Läs etiketten på flaskan. Returnera fälten på svenska; använd null för det som inte syns. "+
         "abv som tal (t.ex. 46). region t.ex. 'Islay, Skottland' eller 'Kentucky, USA'. "+
-        "type t.ex. 'Single malt', 'Bourbon', 'Rom'. cask = fattyp om den nämns."}
+        "type t.ex. 'Single malt', 'Bourbon', 'Rom'. cask = fattyp om den nämns på etiketten – "+
+        "annars, om du känner igen produkten som en välkänd standardflaska, får du ange den typiska "+
+        "fattypen ur din allmänna kunskap istället för null. Är du osäker, använd null."}
     ]}],
     schema:{type:"object",properties:{
       name:{type:["string","null"],description:"Flaskans namn inkl. ålder, t.ex. 'Lagavulin 16'"},

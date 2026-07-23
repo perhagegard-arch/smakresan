@@ -14,6 +14,7 @@ const appCode = ["data.js","facit.js","ai.js","app.js"].map(f => fs.readFileSync
   openBlind, blindStep2, blindPick, blindStep3, goToFridge,
   get blindGuess(){return blindGuess},
   get formDraft(){return formDraft},
+  get pendingPhoto(){return pendingPhoto}, set pendingPhoto(v){pendingPhoto=v},
   set pendingSuggestion(v){pendingSuggestion=v},
   addSuggestedTasting, drinkAdvice, allTastings, closeOverlay,
   encodeShare, decodeShare, openGuestInvite, openGuestView, openGuestAnswer, openSpinner,
@@ -659,6 +660,45 @@ click(nf.w, nf.d.getElementById("saveBtn"));
 check("redigering ändrar bara status, resten av fälten oförändrade", nf.t.state.bottles.tal.status==="finished" && nf.t.state.bottles.tal.distillery==="Talisker");
 check("redigering behåller flaskans befintliga id (tal)", Object.keys(nf.t.state.bottles).includes("tal"));
 check("redigering behåller flaskans färg oförändrad", nf.t.state.bottles.tal.color === "#CE9440");
+
+/* ==== Bildbeskärning (crop) ==== */
+console.log("== Bildbeskärning ==");
+const cr = boot();
+// cropSourceRect(scale, offX, offY, frameSize) är ren geometri utan DOM/canvas – testbar direkt
+check("cropSourceRect: centrerat, ingen zoom → hela ramen", (() => {
+  const r = cr.w.cropSourceRect(1, 0, 0, 300);
+  return r.x===0 && r.y===0 && r.size===300;
+})());
+check("cropSourceRect: panorerat åt höger/ner flyttar källrektangeln", (() => {
+  const r = cr.w.cropSourceRect(1, -50, -20, 300);
+  return r.x===50 && r.y===20 && r.size===300;
+})());
+check("cropSourceRect: dubbel zoom halverar källstorleken", (() => {
+  const r = cr.w.cropSourceRect(2, -100, -50, 300);
+  return r.x===50 && r.y===25 && r.size===150;
+})());
+check("cropSourceRect: fyrdubbel zoom ger en fjärdedels källstorlek", (() => {
+  const r = cr.w.cropSourceRect(4, 0, 0, 300);
+  return Math.abs(r.size-75)<1e-9;
+})());
+
+cr.t.openBottleForm(null);
+check("prisfältet har en hint om att det inte läses av etiketten", cr.d.getElementById("ovContent").textContent.includes("Pris finns inte på etiketten"));
+check("ingen bildförhandsvisning för ny flaska utan foto", cr.d.getElementById("photoPreview").style.display === "none");
+cr.t.pendingPhoto = "data:image/jpeg;base64,FAKEDATA";
+cr.w.renderBottleFormOverlay();
+check("renderBottleFormOverlay visar pendingPhoto som förhandsvisning", cr.d.getElementById("photoPreview").src.includes("FAKEDATA") && cr.d.getElementById("photoPreview").style.display !== "none");
+cr.t.pendingPhoto = null;
+
+const hp2 = boot();
+const fakeEvt = {target:{value:"något.jpg", files:[]}};
+hp2.w.handlePhoto(fakeEvt);
+check("handlePhoto nollställer file-inputen direkt (går att välja om samma fil)", fakeEvt.target.value === "");
+check("handlePhoto utan vald fil öppnar ingen overlay", !hp2.d.getElementById("overlay").classList.contains("open"));
+// createImageBitmap finns inte i jsdom (motsvarar ett läsfel i en riktig webbläsare) –
+// bekräfta att felet fångas snyggt (toast) istället för att krascha appen
+hp2.w.handlePhoto({target:{value:"bild.jpg", files:[{name:"bild.jpg"}]}});
+check("trasig bildläsning fångas med en toast istället för att krascha", hp2.d.getElementById("toast").textContent === "Kunde inte läsa bilden.");
 
 /* ==== Övriga hjälpfunktioner ==== */
 console.log("== Övriga hjälpfunktioner ==");

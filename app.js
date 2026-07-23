@@ -1226,7 +1226,14 @@ function openBottleForm(id, opts){
   if(!formDraft.song) formDraft.song = {artist:"", title:""};
   formDraft.id = id || null;
   pendingPhoto = null;
+  renderBottleFormOverlay();
+  if(opts.camera) $("photoInput").click(); // öppnar kameran direkt på mobilen
+}
 
+/* Bygger formulärets HTML från BEFINTLIG formDraft/pendingPhoto (rör dem aldrig) –
+   så vi kan komma tillbaka hit efter bildbeskärningen utan att tappa ifyllda fält. */
+function renderBottleFormOverlay(){
+  const id = formDraft.id;
   const fields = [
     ["name","Namn *","t.ex. Lagavulin 16"],
     ["distillery","Destilleri",""],
@@ -1238,7 +1245,7 @@ function openBottleForm(id, opts){
   ];
   let html = ovTop(id ? "Redigera flaska" : "Ny flaska");
   html += '<div class="glass-card">';
-  const formPhoto = id ? bottlePhoto(id, "full") : null;
+  const formPhoto = pendingPhoto || (id ? bottlePhoto(id, "full") : null);
   html += '<img class="photo-preview" id="photoPreview" src="'+(formPhoto||"")+'" alt="" style="'+(formPhoto?"":"display:none")+'">';
   html += '<div class="seg-row" style="margin-bottom:14px">'+
     '<button class="seg-btn" id="photoBtn" type="button">📷 Fota flaskan'+(aiReady()?" (AI läser etiketten)":"")+'</button></div>'+
@@ -1246,7 +1253,9 @@ function openBottleForm(id, opts){
     '<div class="hint" id="aiStatus" style="margin-bottom:12px;display:none"></div>';
   fields.forEach(([f, label, ph]) => {
     html += '<div class="field"><label>'+label+'</label><input type="'+((f==="abv"||f==="price")?"number":"text")+'" '+
-      (f==="abv"?'step="0.1" ':"")+'data-bf="'+f+'" value="'+esc(formDraft[f]==null?"":formDraft[f])+'" placeholder="'+ph+'"></div>';
+      (f==="abv"?'step="0.1" ':"")+'data-bf="'+f+'" value="'+esc(formDraft[f]==null?"":formDraft[f])+'" placeholder="'+ph+'">'+
+      (f==="price" ? '<div class="hint">Pris finns inte på etiketten – fyll i själv.</div>' : '')+
+      '</div>';
   });
   html += '<div class="field"><label>🎵 Signaturlåt – artist</label><input type="text" data-sf="artist" value="'+esc(formDraft.song.artist)+'" placeholder="t.ex. Tom Waits"></div>'+
     '<div class="field"><label>🎵 Signaturlåt – titel</label><input type="text" data-sf="title" value="'+esc(formDraft.song.title)+'" placeholder="t.ex. Closing Time"></div>';
@@ -1263,7 +1272,6 @@ function openBottleForm(id, opts){
 
   openOverlay(html, {saveLabel:"Spara flaskan", onSave:saveBottleForm});
   bindBottleForm();
-  if(opts.camera) $("photoInput").click(); // öppnar kameran direkt på mobilen
 }
 
 function bindBottleForm(){
@@ -1313,43 +1321,122 @@ function bindBottleForm(){
   });
 }
 
-async function handlePhoto(e){
+function handlePhoto(e){
   const file = e.target.files && e.target.files[0];
+  e.target.value = ""; // så samma fil kan väljas igen efter en avbruten beskärning
   if(!file) return;
-  const status = $("aiStatus");
-  try{
-    pendingPhoto = await resizeImage(file, 512, 0.72);
-    const prev = $("photoPreview");
-    prev.src = pendingPhoto;
-    prev.style.display = "block";
-  }catch(err){ toast("Kunde inte läsa bilden."); return; }
-  if(aiReady()){
-    status.style.display = "block";
-    status.textContent = "🔍 AI läser etiketten …";
-    try{
-      const big = await resizeImage(file, 1024, 0.8);
-      const info = await extractLabel(big);
-      ["name","distillery","region","type","abv","cask"].forEach(f => {
-        if(info[f] != null && info[f] !== ""){
-          formDraft[f] = info[f];
-          const inp = document.querySelector('input[data-bf="'+f+'"]');
-          if(inp) inp.value = info[f];
-        }
-      });
-      status.textContent = "✓ Etiketten läst – kontrollera och rätta fälten innan du sparar.";
-    }catch(err){ status.textContent = "AI kunde inte läsa etiketten ("+err.message+") – fyll i för hand."; }
-  }
+  openPhotoCropper(file);
 }
 
-function resizeImage(file, maxDim, quality){
-  return createImageBitmap(file).then(bmp => {
-    const s = Math.min(1, maxDim/Math.max(bmp.width, bmp.height));
-    const c = document.createElement("canvas");
-    c.width = Math.max(1, Math.round(bmp.width*s));
-    c.height = Math.max(1, Math.round(bmp.height*s));
-    c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
-    return c.toDataURL("image/jpeg", quality);
+/* ===== Bildbeskärning – kvadratisk ram, pan med fingret/musen, zoom med reglage =====
+   Ren geometri i cropSourceRect() går att enhetstesta utan canvas/DOM. */
+let cropState = null;
+async function openPhotoCropper(file){
+  let bmp;
+  try{ bmp = await createImageBitmap(file); }
+  catch(err){ toast("Kunde inte läsa bilden."); return; }
+  const FRAME = 300;
+  const minScale = Math.max(FRAME/bmp.width, FRAME/bmp.height);
+  cropState = {bmp, url:URL.createObjectURL(file), frame:FRAME, scale:minScale, minScale, maxScale:minScale*4, offX:0, offY:0};
+  cropState.offX = (FRAME - bmp.width*minScale)/2;
+  cropState.offY = (FRAME - bmp.height*minScale)/2;
+
+  const html = ovTop("Beskär bilden")+
+    '<p class="muted" style="margin-bottom:14px">Dra för att flytta, dra i reglaget för att zooma – se till att bara etiketten syns i rutan.</p>'+
+    '<div class="crop-frame" id="cropFrame" style="width:'+FRAME+'px;height:'+FRAME+'px"><img id="cropImg" draggable="false" alt=""></div>'+
+    '<input type="range" id="cropZoom" min="0" max="1" step="0.01" value="0" style="margin-top:18px">'+
+    '<div class="seg-row" style="margin-top:18px">'+
+      '<button class="btn ghost" id="cropCancelBtn" type="button" style="width:auto;flex:1">Avbryt</button>'+
+      '<button class="btn" id="cropDoneBtn" type="button" style="width:auto;flex:1">✅ Klar</button>'+
+    '</div>';
+  openOverlay(html);
+  bindCropper();
+}
+function bindCropper(){
+  const frameEl = $("cropFrame");
+  $("cropImg").src = cropState.url;
+  applyCropTransform();
+  let dragging = false, startX = 0, startY = 0, startOffX = 0, startOffY = 0;
+  frameEl.addEventListener("pointerdown", e => {
+    dragging = true; frameEl.setPointerCapture(e.pointerId);
+    startX = e.clientX; startY = e.clientY;
+    startOffX = cropState.offX; startOffY = cropState.offY;
   });
+  frameEl.addEventListener("pointermove", e => {
+    if(!dragging) return;
+    cropState.offX = startOffX + (e.clientX - startX);
+    cropState.offY = startOffY + (e.clientY - startY);
+    clampCropOffsets();
+    applyCropTransform();
+  });
+  ["pointerup","pointercancel","pointerleave"].forEach(ev => frameEl.addEventListener(ev, () => { dragging = false; }));
+  $("cropZoom").addEventListener("input", e => {
+    rescaleCropAroundCenter(cropState.minScale + (+e.target.value)*(cropState.maxScale-cropState.minScale));
+  });
+  $("cropDoneBtn").addEventListener("click", finishCrop);
+  $("cropCancelBtn").addEventListener("click", cancelCrop);
+}
+function applyCropTransform(){
+  const cs = cropState, img = $("cropImg");
+  img.style.width = (cs.bmp.width*cs.scale)+"px";
+  img.style.height = (cs.bmp.height*cs.scale)+"px";
+  img.style.left = cs.offX+"px";
+  img.style.top = cs.offY+"px";
+}
+function clampCropOffsets(){
+  const cs = cropState;
+  const dw = cs.bmp.width*cs.scale, dh = cs.bmp.height*cs.scale;
+  cs.offX = Math.min(0, Math.max(cs.frame-dw, cs.offX));
+  cs.offY = Math.min(0, Math.max(cs.frame-dh, cs.offY));
+}
+function rescaleCropAroundCenter(newScale){
+  const cs = cropState;
+  const oldDw = cs.bmp.width*cs.scale, oldDh = cs.bmp.height*cs.scale;
+  const cx = (cs.frame/2 - cs.offX)/oldDw, cy = (cs.frame/2 - cs.offY)/oldDh; // fokuspunkt, andel av bilden
+  cs.scale = newScale;
+  cs.offX = cs.frame/2 - cx*cs.bmp.width*newScale;
+  cs.offY = cs.frame/2 - cy*cs.bmp.height*newScale;
+  clampCropOffsets();
+  applyCropTransform();
+}
+/* Ren funktion (ingen DOM/canvas) – räknar ut vald region i originalbildens pixlar */
+function cropSourceRect(scale, offX, offY, frameSize){
+  return {x:-offX/scale, y:-offY/scale, size:frameSize/scale};
+}
+function cropToDataUrl(bmp, rect, outSize, quality){
+  const c = document.createElement("canvas");
+  c.width = outSize; c.height = outSize;
+  c.getContext("2d").drawImage(bmp, rect.x, rect.y, rect.size, rect.size, 0, 0, outSize, outSize);
+  return c.toDataURL("image/jpeg", quality);
+}
+function cancelCrop(){
+  if(cropState) URL.revokeObjectURL(cropState.url);
+  cropState = null;
+  renderBottleFormOverlay();
+}
+async function finishCrop(){
+  const cs = cropState;
+  const rect = cropSourceRect(cs.scale, cs.offX, cs.offY, cs.frame);
+  pendingPhoto = cropToDataUrl(cs.bmp, rect, 512, 0.72);
+  const bigCrop = cropToDataUrl(cs.bmp, rect, 1024, 0.8);
+  URL.revokeObjectURL(cs.url);
+  cropState = null;
+  renderBottleFormOverlay();
+  if(!aiReady()) return;
+  const status = $("aiStatus");
+  status.style.display = "block";
+  status.textContent = "🔍 AI läser etiketten …";
+  try{
+    const info = await extractLabel(bigCrop);
+    ["name","distillery","region","type","abv","cask"].forEach(f => {
+      if(info[f] != null && info[f] !== ""){
+        formDraft[f] = info[f];
+        const inp = document.querySelector('input[data-bf="'+f+'"]');
+        if(inp) inp.value = info[f];
+      }
+    });
+    status.textContent = "✓ Etiketten läst – kontrollera och rätta fälten innan du sparar.";
+  }catch(err){ status.textContent = "AI kunde inte läsa etiketten ("+err.message+") – fyll i för hand."; }
 }
 
 function saveBottleForm(){
